@@ -31,6 +31,8 @@ export const users = pgTable("users", {
 
   fullName: varchar("full_name", { length: 150 }).notNull(),
 
+  passwordHash: varchar("password_hash", { length: 255 }),
+
   role: userRoleEnum("role").notNull().default("CITIZEN"),
 
   preferredLanguage: languageEnum("preferred_language")
