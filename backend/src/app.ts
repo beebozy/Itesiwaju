@@ -23,10 +23,12 @@ app.use(express.json());
 app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
-    service: "itesiwoju-backend",
+    service: "itesiwaju-backend",
   });
 });
 
 app.use("/api/v1/reports", reportsRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/auth/test", authTestRouter);
+
+export default app;
