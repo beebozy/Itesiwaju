@@ -1,7 +1,11 @@
 import { Router } from "express";
 
 import { authMiddleware } from "../../middleware/auth.middleware.js";
-import { createReportController } from "./reports.controller.js";
+import {
+  createReportController,
+  getMyReportsController,
+  getMyReportByIdController,
+} from "./reports.controller.js";
 
 export const reportsRouter = Router();
 
@@ -9,4 +13,16 @@ reportsRouter.post(
   "/",
   authMiddleware,
   createReportController,
+);
+
+reportsRouter.get(
+  "/",
+  authMiddleware,
+  getMyReportsController,
+);
+
+reportsRouter.get(
+  "/:id",
+  authMiddleware,
+  getMyReportByIdController,
 );

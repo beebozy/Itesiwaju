@@ -4,6 +4,7 @@ import {
   caseEvents,
     evidence,
 } from "../../db/schema/index.js";
+import {and,desc, eq} from "drizzle-orm";
 
 export interface CreateReportInput {
   reporterId: string;
@@ -93,5 +94,53 @@ export async function createReport(input: CreateReportInput) {
       evidence: reportEvidence,
       event,
     };
+    
   });
+
+  
+};
+
+export async function getMyReports(reporterId: string) {
+  return db
+    .select()
+    .from(wasteCases)
+    .where(eq(wasteCases.reporterId, reporterId))
+    .orderBy(desc(wasteCases.createdAt));
+}
+
+export async function getMyReportById(
+  reportId: string,
+  reporterId: string,
+) {
+  const [wasteCase] = await db
+    .select()
+    .from(wasteCases)
+    .where(
+      and(
+        eq(wasteCases.id, reportId),
+        eq(wasteCases.reporterId, reporterId),
+      ),
+    )
+    .limit(1);
+
+  if (!wasteCase) {
+    return null;
+  }
+
+  const reportEvidence = await db
+    .select()
+    .from(evidence)
+    .where(eq(evidence.caseId, wasteCase.id));
+
+  const events = await db
+    .select()
+    .from(caseEvents)
+    .where(eq(caseEvents.caseId, wasteCase.id))
+    .orderBy(caseEvents.createdAt);
+
+  return {
+    wasteCase,
+    evidence: reportEvidence,
+    events,
+  };
 }
