@@ -1,0 +1,12 @@
+# Build and distribution artifacts
+build/
+dist/
+.dart_tool/
+
+# Environment files
+.env
+*.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
