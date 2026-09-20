@@ -1,14 +1,33 @@
 import type { Response } from "express";
 
 import type { AuthenticatedRequest } from "../../middleware/auth.middleware.js";
-import { createReport,getMyReports,getMyReportById} from "./reports.service.js";
+import { createReport, getMyReports, getMyReportById } from "./reports.service.js";
 import { createReportSchema } from "./reports.schema.js";
-
+import { uploadImage } from "../../services/cloudinary.service.js";
+import { reverseGeocode } from "../../services/geocoding.service.js";
 
 export async function createReportController(
   req: AuthenticatedRequest,
   res: Response,
 ) {
+  if (!req.user) {
+    return res.status(401).json({
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication required.",
+      },
+    });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({
+      error: {
+        code: "PHOTO_REQUIRED",
+        message: "Report photo is required.",
+      },
+    });
+  }
+
   const result = createReportSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -21,19 +40,21 @@ export async function createReportController(
     });
   }
 
-  if (!req.user) {
-    return res.status(401).json({
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Authentication required.",
-      },
-    });
-  }
-
   try {
+    const uploaded = await uploadImage(req.file.buffer);
+
+    const location = await reverseGeocode(
+      result.data.latitude,
+      result.data.longitude,
+    );
+
     const report = await createReport({
       ...result.data,
       reporterId: req.user.userId,
+      imageUrl: uploaded.secureUrl,
+      address: location.address ?? undefined,
+      ward: location.ward ?? undefined,
+      lga: location.lga ?? undefined,
     });
 
     return res.status(201).json({
@@ -50,6 +71,7 @@ export async function createReportController(
     });
   }
 }
+
 export async function getMyReportsController(
   req: AuthenticatedRequest,
   res: Response,
@@ -80,6 +102,7 @@ export async function getMyReportsController(
     });
   }
 }
+
 export async function getMyReportByIdController(
   req: AuthenticatedRequest,
   res: Response,

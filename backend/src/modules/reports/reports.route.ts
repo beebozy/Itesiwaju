@@ -6,12 +6,14 @@ import {
   getMyReportsController,
   getMyReportByIdController,
 } from "./reports.controller.js";
+import { uploadReportPhoto } from "../../middleware/upload.middleware.js";
 
 export const reportsRouter = Router();
 
 reportsRouter.post(
   "/",
   authMiddleware,
+  uploadReportPhoto,
   createReportController,
 );
 
