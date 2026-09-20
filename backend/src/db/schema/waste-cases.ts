@@ -74,6 +74,7 @@ export const wasteCases = pgTable("waste_cases", {
   address: varchar("address", {
     length: 255,
   }),
+  street: varchar("street", { length: 255 }),
 
   ward: varchar("ward", {
     length: 100,

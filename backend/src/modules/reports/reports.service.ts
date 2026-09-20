@@ -15,12 +15,17 @@ export interface CreateReportInput {
   longitude?: string;
   locationAccuracy?: string;
 
+  address?: string;
+  street?: string;
+  ward?: string;
+  lga?: string;
+
   privacyLevel?: "IDENTIFIED" | "PRIVATE";
 
   imageUrl: string;
+
   capturedAt?: Date;
 }
-
 function generateCaseNumber(): string {
   const timestamp = Date.now();
 
@@ -32,27 +37,28 @@ export async function createReport(input: CreateReportInput) {
     // 1. Create the waste case
     const [wasteCase] = await tx
       .insert(wasteCases)
-      .values({
-        caseNumber: generateCaseNumber(),
+ .values({
+  caseNumber: generateCaseNumber(),
+  reporterId: input.reporterId,
 
-        reporterId: input.reporterId,
+  source: "MOBILE",
+  status: "REPORTED",
 
-        source: "MOBILE",
+  description: input.description,
 
-        status: "REPORTED",
+  latitude: input.latitude,
+  longitude: input.longitude,
+  locationAccuracy: input.locationAccuracy,
 
-        description: input.description,
+  address: input.address,
+  street: input.street,
+  ward: input.ward,
+  lga: input.lga,
 
-        latitude: input.latitude,
+  privacyLevel: input.privacyLevel ?? "PRIVATE",
 
-        longitude: input.longitude,
-
-        locationAccuracy: input.locationAccuracy,
-
-        privacyLevel: input.privacyLevel ?? "PRIVATE",
-
-        reportedAt: new Date(),
-      })
+  reportedAt: new Date(),
+})
       .returning();
 
     // 2. Create the evidence record

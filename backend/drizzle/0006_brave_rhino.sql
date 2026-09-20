@@ -1,0 +1,1 @@
+ALTER TABLE "waste_cases" ADD COLUMN "street" varchar(255);
