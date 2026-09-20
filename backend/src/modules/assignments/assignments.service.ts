@@ -94,3 +94,70 @@ export async function createAssignment(
     };
   });
 }
+export async function acceptAssignment(
+  assignmentId: string,
+  collectorId: string,
+) {
+  return db.transaction(async (tx) => {
+    // 1. Find the assignment
+    const [assignment] = await tx
+      .select()
+      .from(assignments)
+      .where(eq(assignments.id, assignmentId))
+      .limit(1);
+
+    if (!assignment) {
+      throw new Error("ASSIGNMENT_NOT_FOUND");
+    }
+
+    // 2. Make sure this assignment belongs to the logged-in collector
+    if (assignment.collectorId !== collectorId) {
+      throw new Error("ASSIGNMENT_NOT_OWNED");
+    }
+
+    // 3. Assignment must currently be ASSIGNED
+    if (assignment.status !== "ASSIGNED") {
+      throw new Error("INVALID_ASSIGNMENT_STATUS");
+    }
+
+    // 4. Update assignment
+    const [updatedAssignment] = await tx
+      .update(assignments)
+      .set({
+        status: "ACCEPTED",
+        acceptedAt: new Date(),
+      })
+      .where(eq(assignments.id, assignmentId))
+      .returning();
+
+    // 5. Update case to ACCEPTED
+    const [updatedCase] = await tx
+      .update(wasteCases)
+      .set({
+        status: "ACCEPTED",
+        updatedAt: new Date(),
+      })
+      .where(eq(wasteCases.id, assignment.caseId))
+      .returning();
+
+    // 6. Record case event
+    const [event] = await tx
+      .insert(caseEvents)
+      .values({
+        caseId: assignment.caseId,
+        actorId: collectorId,
+        eventType: "ACCEPTED",
+        description: "Collector accepted the assignment.",
+        metadata: {
+          assignmentId,
+        },
+      })
+      .returning();
+
+    return {
+      assignment: updatedAssignment,
+      case: updatedCase,
+      event,
+    };
+  });
+}
