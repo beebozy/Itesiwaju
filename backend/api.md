@@ -1,66 +1,126 @@
-Here are all the **currently available Itesiwaju backend endpoints**:
+# Itesiwaju Backend API
 
-### Base URL
+API documentation for the Itesiwaju waste-management and accountability platform.
+
+---
+
+# Base URL
+
+Production:
 
 ```text
 https://backend-6vdv-blue.vercel.app
 ```
 
-### Public endpoints
-
-| Method | Endpoint                | Purpose                     |
-| ------ | ----------------------- | --------------------------- |
-| `GET`  | `/health`               | Check if backend is running |
-| `POST` | `/api/v1/auth/register` | Register a citizen          |
-| `POST` | `/api/v1/auth/login`    | Login and receive JWT       |
-
-### Protected endpoints
-
-These require:
-
-```http
-Authorization: Bearer <access_token>
-```
-
-| Method | Endpoint              | Purpose                                       |
-| ------ | --------------------- | --------------------------------------------- |
-| `POST` | `/api/v1/reports`     | Create a waste report                         |
-| `GET`  | `/api/v1/reports`     | Get authenticated user's reports              |
-| `GET`  | `/api/v1/reports/:id` | Get a specific report, evidence, and timeline |
-
-### Complete list
+Local development:
 
 ```text
-GET  https://backend-6vdv-blue.vercel.app/health
-
-POST https://backend-6vdv-blue.vercel.app/api/v1/auth/register
-
-POST https://backend-6vdv-blue.vercel.app/api/v1/auth/login
-
-POST https://backend-6vdv-blue.vercel.app/api/v1/reports
-GET  https://backend-6vdv-blue.vercel.app/api/v1/reports
-GET  https://backend-6vdv-blue.vercel.app/api/v1/reports/:id
+http://localhost:3000
 ```
 
+All API endpoints use the `/api/v1` prefix except the health check.
 
+---
 
-## Endpoints
+# Authentication
 
-### 1. Health Check
+Itesiwaju uses JWT access tokens.
+
+After a successful login, the backend returns an `accessToken`.
+
+Protected endpoints require:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+Example:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+The frontend should store the access token securely and attach it to every protected API request.
+
+---
+
+# User Roles
+
+The backend currently supports:
+
+```text
+CITIZEN
+PSP_OPERATOR
+AGENCY_OPERATOR
+COLLECTOR
+ADMIN
+```
+
+### Role access
+
+| Role              | Purpose                                    |
+| ----------------- | ------------------------------------------ |
+| `CITIZEN`         | Submit and track waste reports             |
+| `PSP_OPERATOR`    | Private-sector/service-provider operations |
+| `AGENCY_OPERATOR` | LAWMA/agency case management and analytics |
+| `COLLECTOR`       | Handle assigned waste cases                |
+| `ADMIN`           | Administrative access                      |
+
+Normal public registration creates users with:
+
+```text
+CITIZEN
+```
+
+Privileged roles should not be self-assigned by users.
+
+---
+
+# Complete Endpoint Summary
+
+## Public
+
+| Method | Endpoint                | Auth | Purpose               |
+| ------ | ----------------------- | ---- | --------------------- |
+| `GET`  | `/health`               | No   | Health check          |
+| `POST` | `/api/v1/auth/register` | No   | Register a citizen    |
+| `POST` | `/api/v1/auth/login`    | No   | Login and receive JWT |
+
+## Citizen / Authenticated
+
+| Method  | Endpoint                   | Auth | Purpose                          |
+| ------- | -------------------------- | ---- | -------------------------------- |
+| `POST`  | `/api/v1/reports`          | JWT  | Create waste report              |
+| `GET`   | `/api/v1/reports`          | JWT  | Get authenticated user's reports |
+| `GET`   | `/api/v1/reports/:id`      | JWT  | Get report details               |
+| `PATCH` | `/api/v1/cases/:id/status` | JWT  | Change case status               |
+
+## Agency / Admin
+
+| Method | Endpoint                         | Auth | Role                       |
+| ------ | -------------------------------- | ---- | -------------------------- |
+| `GET`  | `/api/v1/analytics/overview`     | JWT  | `AGENCY_OPERATOR`, `ADMIN` |
+| `POST` | `/api/v1/assignments/:id/assign` | JWT  | `AGENCY_OPERATOR`, `ADMIN` |
+
+---
+
+# 1. Health Check
 
 ```http
 GET /health
 ```
 
-**Authentication:** None
+### Authentication
 
-**Full URL:**
+None.
+
+### Production URL
 
 ```text
 https://backend-6vdv-blue.vercel.app/health
 ```
 
-**Response:**
+### Response
 
 ```json
 {
@@ -71,7 +131,7 @@ https://backend-6vdv-blue.vercel.app/health
 
 ---
 
-### 2. Register
+# 2. Register
 
 Creates a new citizen account.
 
@@ -79,15 +139,17 @@ Creates a new citizen account.
 POST /api/v1/auth/register
 ```
 
-**Authentication:** None
+### Authentication
 
-**Headers:**
+None.
+
+### Headers
 
 ```http
 Content-Type: application/json
 ```
 
-**Request body:**
+### Request body
 
 ```json
 {
@@ -99,7 +161,17 @@ Content-Type: application/json
 }
 ```
 
-**Possible languages:**
+### Fields
+
+| Field               | Required | Description               |
+| ------------------- | -------- | ------------------------- |
+| `fullName`          | Yes      | User's full name          |
+| `phone`             | Yes      | User's phone number       |
+| `email`             | No       | User's email address      |
+| `password`          | Yes      | Account password          |
+| `preferredLanguage` | No       | User's preferred language |
+
+Supported languages:
 
 ```text
 en
@@ -108,7 +180,7 @@ pcm
 fr
 ```
 
-**Response:**
+### Response
 
 ```json
 {
@@ -129,23 +201,25 @@ fr
 
 ---
 
-### 3. Login
+# 3. Login
 
-Authenticates a citizen and returns an access token.
+Authenticates a user and returns an access token.
 
 ```http
 POST /api/v1/auth/login
 ```
 
-**Authentication:** None
+### Authentication
 
-**Headers:**
+None.
+
+### Headers
 
 ```http
 Content-Type: application/json
 ```
 
-**Request body:**
+### Request body
 
 ```json
 {
@@ -154,7 +228,7 @@ Content-Type: application/json
 }
 ```
 
-**Response:**
+### Response
 
 ```json
 {
@@ -173,27 +247,11 @@ Content-Type: application/json
 }
 ```
 
-Save the `accessToken` and use it for protected endpoints.
+The frontend should save the `accessToken` and send it with subsequent protected requests.
 
 ---
 
-# Authentication
-
-Protected endpoints require:
-
-```http
-Authorization: Bearer <accessToken>
-```
-
-Example:
-
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-```
-
----
-
-### 4. Create Waste Report
+# 4. Create Waste Report
 
 Creates a new waste case.
 
@@ -201,64 +259,94 @@ Creates a new waste case.
 POST /api/v1/reports
 ```
 
-**Authentication:** Required
+### Authentication
 
-**Headers:**
+Required.
+
+### Headers
 
 ```http
-Content-Type: application/json
 Authorization: Bearer <accessToken>
+Content-Type: multipart/form-data
 ```
 
-**Request body:**
+### Important
 
-```json
-{
-  "description": "Waste dumped beside the road",
-  "latitude": "6.5244",
-  "longitude": "3.3792",
-  "locationAccuracy": "8.2",
-  "privacyLevel": "PRIVATE",
-  "imageUrl": "https://example.com/waste.jpg",
-  "capturedAt": "2026-09-18T12:00:00.000Z"
-}
+This endpoint accepts a **multipart form upload**.
+
+The frontend should **not** send `imageUrl`.
+
+The frontend sends the actual image file using the `photo` field.
+
+The backend uploads the image to Cloudinary and stores the resulting media URL as evidence associated with the case.
+
+### Form fields
+
+| Field              | Required | Description                      |
+| ------------------ | -------- | -------------------------------- |
+| `photo`            | Yes      | Waste image file                 |
+| `description`      | No       | Description of the incident      |
+| `latitude`         | No       | GPS latitude                     |
+| `longitude`        | No       | GPS longitude                    |
+| `locationAccuracy` | No       | GPS accuracy in metres           |
+| `privacyLevel`     | No       | `PRIVATE` or `IDENTIFIED`        |
+| `capturedAt`       | No       | Original photo capture timestamp |
+
+### Example
+
+Using `curl`:
+
+```bash
+curl -X POST \
+  https://backend-6vdv-blue.vercel.app/api/v1/reports \
+  -H "Authorization: Bearer <accessToken>" \
+  -F "photo=@waste.jpg" \
+  -F "description=Illegal dumping beside the road" \
+  -F "latitude=6.524400" \
+  -F "longitude=3.379200" \
+  -F "locationAccuracy=10" \
+  -F "privacyLevel=PRIVATE" \
+  -F "capturedAt=2026-09-20T10:00:00Z"
 ```
 
-**Fields:**
+### Important frontend behavior
 
-| Field              | Required | Description                 |
-| ------------------ | -------- | --------------------------- |
-| `description`      | No       | Description of the incident |
-| `latitude`         | No       | GPS latitude                |
-| `longitude`        | No       | GPS longitude               |
-| `locationAccuracy` | No       | GPS accuracy in metres      |
-| `privacyLevel`     | No       | `PRIVATE` or `IDENTIFIED`   |
-| `imageUrl`         | Yes      | Temporary image URL         |
-| `capturedAt`       | No       | Photo capture time          |
+The frontend does **not** send:
 
-> **Note:** `imageUrl` is temporary. Cloudinary integration will replace this with actual image upload using `multipart/form-data`.
+```text
+reporterId
+caseNumber
+status
+source
+```
 
-The `reporterId` is automatically obtained from the authenticated user's JWT. The frontend does **not** send it.
+These are generated/controlled by the backend.
+
+The authenticated user's ID is obtained from the JWT.
+
+The backend creates the case and associated evidence.
 
 ---
 
-### 5. Get My Reports
+# 5. Get My Reports
 
-Returns reports belonging to the currently authenticated citizen.
+Returns reports belonging to the authenticated user.
 
 ```http
 GET /api/v1/reports
 ```
 
-**Authentication:** Required
+### Authentication
 
-**Headers:**
+Required.
+
+### Headers
 
 ```http
 Authorization: Bearer <accessToken>
 ```
 
-**Response:**
+### Response
 
 ```json
 {
@@ -272,6 +360,10 @@ Authorization: Bearer <accessToken>
       "description": "Waste dumped beside the road",
       "latitude": "6.524400",
       "longitude": "3.379200",
+      "locationAccuracy": "8.20",
+      "address": "Example address",
+      "ward": "Example ward",
+      "lga": "Example LGA",
       "privacyLevel": "PRIVATE",
       "reportedAt": "...",
       "createdAt": "...",
@@ -281,33 +373,35 @@ Authorization: Bearer <accessToken>
 }
 ```
 
-The backend automatically filters reports using the authenticated user's ID.
+The backend automatically filters the results using the authenticated user's ID.
 
 ---
 
-### 6. Get Report Details
+# 6. Get Report Details
 
-Returns a specific report belonging to the authenticated citizen.
+Returns a specific report, its evidence, and its event timeline.
 
 ```http
 GET /api/v1/reports/:id
 ```
 
-**Authentication:** Required
+### Authentication
 
-**Example:**
+Required.
 
-```text
-GET /api/v1/reports/994733a6-3a15-46f2-85e0-3cca6dde6820
+### Example
+
+```http
+GET /api/v1/reports/9939ffbf-3b41-459f-9490-0d8a0ff7b7fc
 ```
 
-**Headers:**
+### Headers
 
 ```http
 Authorization: Bearer <accessToken>
 ```
 
-**Response:**
+### Response
 
 ```json
 {
@@ -315,6 +409,8 @@ Authorization: Bearer <accessToken>
     "wasteCase": {
       "id": "uuid",
       "caseNumber": "LAG-123456",
+      "reporterId": "uuid",
+      "source": "MOBILE",
       "status": "REPORTED",
       "description": "Waste dumped beside the road",
       "latitude": "6.524400",
@@ -327,13 +423,14 @@ Authorization: Bearer <accessToken>
         "id": "uuid",
         "caseId": "uuid",
         "type": "REPORT_PHOTO",
-        "mediaUrl": "https://example.com/waste.jpg",
+        "mediaUrl": "https://...",
         "capturedAt": "..."
       }
     ],
     "events": [
       {
         "id": "uuid",
+        "caseId": "uuid",
         "eventType": "REPORTED",
         "description": "Waste report submitted.",
         "createdAt": "..."
@@ -343,34 +440,373 @@ Authorization: Bearer <accessToken>
 }
 ```
 
-The backend verifies that the requested report belongs to the authenticated user.
+The backend verifies that the report belongs to the authenticated user.
 
 ---
 
-# Current Endpoint Summary
+# 7. Update Case Status
 
-| Method | Endpoint                | Auth | Purpose            |
-| ------ | ----------------------- | ---- | ------------------ |
-| `GET`  | `/health`               | No   | Health check       |
-| `POST` | `/api/v1/auth/register` | No   | Register           |
-| `POST` | `/api/v1/auth/login`    | No   | Login              |
-| `POST` | `/api/v1/reports`       | JWT  | Create report      |
-| `GET`  | `/api/v1/reports`       | JWT  | Get my reports     |
-| `GET`  | `/api/v1/reports/:id`   | JWT  | Get report details |
+Changes the status of a waste case.
+
+```http
+PATCH /api/v1/cases/:id/status
+```
+
+### Authentication
+
+Required.
+
+### Headers
+
+```http
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+```
+
+### Request body
+
+```json
+{
+  "status": "UNDER_REVIEW"
+}
+```
+
+### Available statuses
+
+```text
+REPORTED
+UNDER_REVIEW
+VERIFIED
+ASSIGNED
+ACCEPTED
+IN_PROGRESS
+RESOLVED
+CLOSED
+REJECTED
+DUPLICATE
+REOPENED
+```
+
+### Status transition rules
+
+The backend enforces valid transitions.
+
+```text
+REPORTED
+    ↓
+UNDER_REVIEW
+    ├── VERIFIED
+    ├── REJECTED
+    └── DUPLICATE
+
+VERIFIED
+    ↓
+ASSIGNED
+    ↓
+ACCEPTED
+    ↓
+IN_PROGRESS
+    ↓
+RESOLVED
+    ├── CLOSED
+    └── REOPENED
+
+REOPENED
+    ↓
+UNDER_REVIEW
+```
+
+Invalid status transitions are rejected by the backend.
+
+### Example
+
+```bash
+curl -X PATCH \
+  https://backend-6vdv-blue.vercel.app/api/v1/cases/<CASE_ID>/status \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "UNDER_REVIEW"
+  }'
+```
+
+### Response
+
+The response contains the updated case and the generated case event.
+
+The backend records status changes in `case_events`, providing an audit trail.
 
 ---
 
-# Examples of Frontend Integration
+# 8. Assign Case to Collector
 
-## Fetch API
+Assigns a verified case to a collector.
+
+```http
+POST /api/v1/assignments/:id/assign
+```
+
+### Authentication
+
+Required.
+
+### Required role
+
+```text
+AGENCY_OPERATOR
+ADMIN
+```
+
+### Headers
+
+```http
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+```
+
+### `:id`
+
+The `:id` parameter is the **case ID**.
+
+### Request body
+
+```json
+{
+  "collectorId": "collector-uuid"
+}
+```
+
+### Requirements
+
+The backend verifies that:
+
+1. The case exists.
+2. The case is currently `VERIFIED`.
+3. The collector exists.
+4. The user has the `COLLECTOR` role.
+5. The collector is active.
+
+The backend then:
+
+1. Creates an assignment.
+2. Changes the case status to `ASSIGNED`.
+3. Creates an `ASSIGNED` case event.
+
+### Example
+
+```bash
+curl -X POST \
+  https://backend-6vdv-blue.vercel.app/api/v1/assignments/<CASE_ID>/assign \
+  -H "Authorization: Bearer <LAWMA_ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collectorId": "<COLLECTOR_ID>"
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "assignment": {
+      "id": "uuid",
+      "caseId": "uuid",
+      "collectorId": "uuid",
+      "assignedBy": "uuid",
+      "status": "ASSIGNED",
+      "assignedAt": "...",
+      "acceptedAt": null,
+      "declinedAt": null,
+      "completedAt": null
+    },
+    "case": {
+      "id": "uuid",
+      "caseNumber": "LAG-123456",
+      "status": "ASSIGNED"
+    },
+    "event": {
+      "id": "uuid",
+      "caseId": "uuid",
+      "actorId": "uuid",
+      "eventType": "ASSIGNED",
+      "description": "Case assigned to collector.",
+      "metadata": {
+        "collectorId": "uuid",
+        "assignmentId": "uuid"
+      },
+      "createdAt": "..."
+    }
+  }
+}
+```
+
+---
+
+# 9. Analytics Overview
+
+Returns high-level case statistics for the LAWMA/agency dashboard.
+
+```http
+GET /api/v1/analytics/overview
+```
+
+### Authentication
+
+Required.
+
+### Required roles
+
+```text
+AGENCY_OPERATOR
+ADMIN
+```
+
+### Headers
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "totalCases": 10,
+    "casesByStatus": {
+      "reported": 9,
+      "underReview": 0,
+      "verified": 0,
+      "assigned": 1,
+      "accepted": 0,
+      "inProgress": 0,
+      "resolved": 0,
+      "closed": 0,
+      "rejected": 0,
+      "duplicate": 0,
+      "reopened": 0
+    }
+  }
+}
+```
+
+### Frontend usage
+
+This endpoint can power dashboard KPI cards such as:
+
+```text
+Total Cases
+Reported
+Under Review
+Verified
+Assigned
+Accepted
+In Progress
+Resolved
+Closed
+Rejected
+Duplicate
+Reopened
+```
+
+---
+
+# Case Status Lifecycle
+
+The overall case lifecycle is:
+
+```text
+                    ┌──────────────┐
+                    │   REPORTED   │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ UNDER_REVIEW │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+          VERIFIED      REJECTED     DUPLICATE
+              │
+              ▼
+          ASSIGNED
+              │
+              ▼
+          ACCEPTED
+              │
+              ▼
+         IN_PROGRESS
+              │
+              ▼
+          RESOLVED
+           │       │
+           ▼       ▼
+        CLOSED  REOPENED
+                    │
+                    ▼
+              UNDER_REVIEW
+```
+
+---
+
+# Case Events / Audit Trail
+
+Important case actions create events.
+
+Current event types include:
+
+```text
+REPORTED
+UNDER_REVIEW
+VERIFIED
+REJECTED
+DUPLICATE
+ASSIGNED
+ACCEPTED
+ARRIVED
+IN_PROGRESS
+RESOLVED
+CLOSED
+REOPENED
+SLA_BREACHED
+ESCALATED
+```
+
+Case events allow the frontend to display a timeline such as:
+
+```text
+20 Sep 2026
+10:42
+Report submitted
+
+20 Sep 2026
+11:15
+Case moved to review
+
+20 Sep 2026
+12:03
+Case verified
+
+20 Sep 2026
+12:24
+Case assigned to collector
+```
+
+---
+
+# Frontend Authentication Example
+
+## Fetch
 
 ```javascript
 const response = await fetch(
   `${API_BASE_URL}/api/v1/reports`,
   {
     headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
+      Authorization: `Bearer ${accessToken}`,
+    },
   }
 );
 
@@ -379,22 +815,86 @@ const data = await response.json();
 
 ---
 
-## Axios
+# Create Report from React
+
+Because report creation uses `multipart/form-data`, use `FormData`.
 
 ```javascript
-const response = await axios.get(
-  `${API_BASE_URL}/api/v1/reports`,
-  {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
+async function createReport({
+  token,
+  photo,
+  description,
+  latitude,
+  longitude,
+  locationAccuracy,
+  privacyLevel,
+  capturedAt,
+}) {
+  const formData = new FormData();
+
+  formData.append("photo", photo);
+
+  if (description) {
+    formData.append("description", description);
   }
-);
+
+  if (latitude !== undefined) {
+    formData.append("latitude", String(latitude));
+  }
+
+  if (longitude !== undefined) {
+    formData.append("longitude", String(longitude));
+  }
+
+  if (locationAccuracy !== undefined) {
+    formData.append(
+      "locationAccuracy",
+      String(locationAccuracy)
+    );
+  }
+
+  if (privacyLevel) {
+    formData.append("privacyLevel", privacyLevel);
+  }
+
+  if (capturedAt) {
+    formData.append("capturedAt", capturedAt);
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/reports`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to create report");
+  }
+
+  return response.json();
+}
 ```
+
+### Important
+
+Do **not** manually set:
+
+```http
+Content-Type: multipart/form-data
+```
+
+when using `FormData` with `fetch`.
+
+The browser automatically sets the correct `Content-Type` including the multipart boundary.
 
 ---
 
-## React API Function
+# Get My Reports
 
 ```javascript
 async function getMyReports(token) {
@@ -402,8 +902,8 @@ async function getMyReports(token) {
     `${API_BASE_URL}/api/v1/reports`,
     {
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 
@@ -417,32 +917,296 @@ async function getMyReports(token) {
 
 ---
 
-## React Query
+# Get Report Details
 
 ```javascript
-const { data, isLoading, error } = useQuery({
+async function getReport(token, caseId) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/reports/${caseId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch report");
+  }
+
+  return response.json();
+}
+```
+
+---
+
+# Update Case Status
+
+```javascript
+async function updateCaseStatus(token, caseId, status) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/cases/${caseId}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update case status");
+  }
+
+  return response.json();
+}
+```
+
+---
+
+# Assign Case
+
+```javascript
+async function assignCase(token, caseId, collectorId) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/assignments/${caseId}/assign`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        collectorId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to assign case");
+  }
+
+  return response.json();
+}
+```
+
+---
+
+# Get Analytics Overview
+
+```javascript
+async function getAnalyticsOverview(token) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/analytics/overview`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch analytics overview");
+  }
+
+  return response.json();
+}
+```
+
+---
+
+# React Query Examples
+
+## Reports
+
+```javascript
+const {
+  data,
+  isLoading,
+  error,
+} = useQuery({
   queryKey: ["reports"],
-  queryFn: () => getMyReports(accessToken)
+  queryFn: () => getMyReports(accessToken),
+  enabled: !!accessToken,
+});
+```
+
+## Analytics
+
+```javascript
+const {
+  data,
+  isLoading,
+  error,
+} = useQuery({
+  queryKey: ["analytics", "overview"],
+  queryFn: () => getAnalyticsOverview(accessToken),
+  enabled: !!accessToken,
 });
 ```
 
 ---
 
-## Mobile App
+# Error Handling
 
-The same REST API can be consumed by a mobile application:
+API errors generally follow this structure:
 
-```text
-React Native
-Flutter
-Native Android
-Native iOS
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message."
+  }
+}
 ```
 
-The application simply makes HTTP requests to:
+Frontend applications should check:
 
-```text
-https://backend-6vdv-blue.vercel.app
+```javascript
+if (!response.ok) {
+  const body = await response.json();
+
+  throw new Error(
+    body?.error?.message || "Request failed"
+  );
+}
 ```
 
-using the same authentication and API endpoints.
+Common authentication errors include:
+
+```text
+401 Unauthorized
+```
+
+for missing/invalid/expired authentication.
+
+```text
+403 Forbidden
+```
+
+when the authenticated user does not have the required role.
+
+---
+
+# Production API
+
+The frontend should use:
+
+```javascript
+const API_BASE_URL =
+  "https://backend-6vdv-blue.vercel.app";
+```
+
+Example:
+
+```javascript
+const response = await fetch(
+  `${API_BASE_URL}/api/v1/reports`,
+  {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  }
+);
+```
+
+---
+
+# Current Backend Capability
+
+The current backend supports the following workflow:
+
+```text
+                 CITIZEN
+                    │
+                    │ Submit report
+                    ▼
+                 REPORT
+                    │
+                    ▼
+                REPORTED
+                    │
+                    ▼
+              UNDER_REVIEW
+                    │
+                    ▼
+                 VERIFIED
+                    │
+                    │ Agency assigns
+                    ▼
+                ASSIGNED
+                    │
+                    ▼
+                 COLLECTOR
+```
+
+The backend currently provides:
+
+```text
+Authentication
+    ├── Register
+    └── Login
+
+Citizen Reporting
+    ├── Create report
+    ├── List my reports
+    └── Get report details
+
+Case Management
+    └── Update case status
+
+Assignments
+    └── Assign verified case to collector
+
+Analytics
+    └── Dashboard overview
+
+Audit Trail
+    └── Case events
+```
+
+---
+
+# Future Endpoints
+
+The following functionality is part of the planned architecture but is **not yet available in the current API**:
+
+```text
+GET  /api/v1/cases
+GET  /api/v1/cases/:id
+
+GET  /api/v1/analytics/cases/trends
+GET  /api/v1/analytics/cases/status
+GET  /api/v1/analytics/cases/location
+
+GET  /api/v1/collectors
+GET  /api/v1/collectors/:id
+GET  /api/v1/collectors/:id/assignments
+
+POST /api/v1/assignments/:id/accept
+POST /api/v1/assignments/:id/decline
+POST /api/v1/assignments/:id/start
+POST /api/v1/assignments/:id/complete
+```
+
+These should not be consumed by the frontend until they are implemented and deployed.
+
+---
+
+# API Version
+
+Current API version:
+
+```text
+v1
+```
+
+Base API path:
+
+```text
+/api/v1
+```
