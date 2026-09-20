@@ -6,7 +6,7 @@ import { reportsRouter } from "./modules/reports/reports.route.js";
 import { authRouter } from "./modules/auth/auth.route.js";
 import { casesRouter } from "./modules/cases/cases.route.js";
 import { assignmentsRouter } from "./modules/assignments/assignments.route.js";
-//import { geocodingTestRouter } from "./modules/reports/geocoding-test.route.js";
+import { analyticsRouter } from "./modules/analytics/analytics.route.js";
 
 export const app = express();
 
@@ -29,8 +29,13 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/v1/reports", reportsRouter);
+
 app.use("/api/v1/auth", authRouter);
-app.use("api/v1/cases",casesRouter);
-app.use("api/v1/assignments", casesRouter);
+
+app.use("/api/v1/cases", casesRouter);
+
+app.use("/api/v1/assignments", assignmentsRouter);
+
+app.use("/api/v1/analytics", analyticsRouter);
 
 export default app;
