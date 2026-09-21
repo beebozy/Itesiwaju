@@ -132,13 +132,18 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
       _isUploading = true;
     });
 
+    final imageBytes = await _selectedImage!.readAsBytes();
+    final imageFileName = _selectedImage!.name;
+
     final success = await ref.read(createReportProvider.notifier).submit(
           description: _descriptionController.text.trim(),
-          latitude: _currentPosition?.latitude.toString(),
-          longitude: _currentPosition?.longitude.toString(),
-          locationAccuracy: _currentPosition?.accuracy.toStringAsFixed(1),
+          latitude: _currentPosition?.latitude.toString() ?? '6.5244',
+          longitude: _currentPosition?.longitude.toString() ?? '3.3792',
+          locationAccuracy: _currentPosition?.accuracy.toStringAsFixed(1) ?? '10.0',
           privacyLevel: _privacyLevel,
           imagePath: _selectedImage!.path,
+          imageBytes: imageBytes,
+          imageFileName: imageFileName,
           capturedAt: DateTime.now(),
         );
 

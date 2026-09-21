@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/logic/auth_provider.dart';
 import '../data/report_model.dart';
@@ -8,13 +9,15 @@ final reportsRepositoryProvider = Provider<ReportsRepository>((ref) {
   return ReportsRepository(client);
 });
 
-final myReportsProvider = FutureProvider.autoDispose<List<WasteCaseModel>>((ref) async {
+final myReportsProvider = FutureProvider<List<WasteCaseModel>>((ref) async {
   final repo = ref.watch(reportsRepositoryProvider);
   return repo.getMyReports();
 });
 
+final reportsFeedProvider = myReportsProvider;
+
 final reportDetailProvider =
-    FutureProvider.family.autoDispose<ReportDetailModel, String>((ref, id) async {
+    FutureProvider.family<ReportDetailModel, String>((ref, id) async {
   final repo = ref.watch(reportsRepositoryProvider);
   return repo.getReportById(id);
 });
@@ -55,6 +58,8 @@ class CreateReportNotifier extends StateNotifier<CreateReportState> {
     String? locationAccuracy,
     String privacyLevel = 'PRIVATE',
     String? imagePath,
+    Uint8List? imageBytes,
+    String? imageFileName,
     String? imageUrl,
     DateTime? capturedAt,
   }) async {
@@ -67,6 +72,8 @@ class CreateReportNotifier extends StateNotifier<CreateReportState> {
         locationAccuracy: locationAccuracy,
         privacyLevel: privacyLevel,
         imagePath: imagePath,
+        imageBytes: imageBytes,
+        imageFileName: imageFileName,
         imageUrl: imageUrl,
         capturedAt: capturedAt,
       );

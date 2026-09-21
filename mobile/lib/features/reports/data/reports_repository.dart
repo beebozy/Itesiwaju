@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
@@ -41,17 +43,29 @@ class ReportsRepository {
     String? locationAccuracy,
     String privacyLevel = 'PRIVATE',
     String? imagePath,
+    Uint8List? imageBytes,
+    String? imageFileName,
     String? imageUrl,
     DateTime? capturedAt,
   }) async {
     try {
       dynamic requestData;
 
-      if (imagePath != null && imagePath.isNotEmpty) {
-        final fileName = imagePath.split('/').last;
+      Uint8List? bytes = imageBytes;
+      String fileName = imageFileName ?? 'report_photo.jpg';
+
+      if (bytes == null && imagePath != null && imagePath.isNotEmpty) {
+        fileName = imagePath.split('/').last;
+        final file = File(imagePath);
+        if (await file.exists()) {
+          bytes = await file.readAsBytes();
+        }
+      }
+
+      if (bytes != null && bytes.isNotEmpty) {
         requestData = FormData.fromMap({
-          'photo': await MultipartFile.fromFile(
-            imagePath,
+          'photo': MultipartFile.fromBytes(
+            bytes,
             filename: fileName,
           ),
           if (description != null && description.isNotEmpty)

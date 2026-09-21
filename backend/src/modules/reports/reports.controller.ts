@@ -1,7 +1,7 @@
 import type { Response } from "express";
 
 import type { AuthenticatedRequest } from "../../middleware/auth.middleware.js";
-import { createReport, getMyReports, getMyReportById } from "./reports.service.js";
+import { createReport, getMyReports, getMyReportById, getAllReports } from "./reports.service.js";
 import { createReportSchema } from "./reports.schema.js";
 import { uploadImage } from "../../services/cloudinary.service.js";
 import { reverseGeocode } from "../../services/geocoding.service.js";
@@ -86,7 +86,15 @@ export async function getMyReportsController(
   }
 
   try {
-    const reports = await getMyReports(req.user.userId);
+    const isStaff =
+      req.user.role === "AGENCY_OPERATOR" ||
+      req.user.role === "ADMIN" ||
+      req.user.role === "COLLECTOR" ||
+      req.user.role === "PSP_OPERATOR";
+
+    const reports = isStaff
+      ? await getAllReports()
+      : await getMyReports(req.user.userId);
 
     return res.status(200).json({
       data: reports,
@@ -128,7 +136,13 @@ export async function getMyReportByIdController(
   }
 
   try {
-    const report = await getMyReportById(id, req.user.userId);
+    const isStaff =
+      req.user.role === "AGENCY_OPERATOR" ||
+      req.user.role === "ADMIN" ||
+      req.user.role === "COLLECTOR" ||
+      req.user.role === "PSP_OPERATOR";
+
+    const report = await getMyReportById(id, req.user.userId, isStaff);
 
     if (!report) {
       return res.status(404).json({

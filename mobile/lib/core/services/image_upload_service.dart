@@ -16,10 +16,11 @@ class ImageUploadService {
   static Future<String> uploadImage(File imageFile) async {
     try {
       final fileName = imageFile.path.split('/').last;
+      final bytes = await imageFile.readAsBytes();
 
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(
-          imageFile.path,
+        'file': MultipartFile.fromBytes(
+          bytes,
           filename: fileName,
         ),
         'upload_preset': ApiEndpoints.cloudinaryUploadPreset,

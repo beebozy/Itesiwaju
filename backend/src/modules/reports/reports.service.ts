@@ -106,6 +106,13 @@ export async function createReport(input: CreateReportInput) {
   
 };
 
+export async function getAllReports() {
+  return db
+    .select()
+    .from(wasteCases)
+    .orderBy(desc(wasteCases.createdAt));
+}
+
 export async function getMyReports(reporterId: string) {
   return db
     .select()
@@ -117,16 +124,19 @@ export async function getMyReports(reporterId: string) {
 export async function getMyReportById(
   reportId: string,
   reporterId: string,
+  isStaff: boolean = false,
 ) {
+  const whereCondition = isStaff
+    ? eq(wasteCases.id, reportId)
+    : and(
+        eq(wasteCases.id, reportId),
+        eq(wasteCases.reporterId, reporterId),
+      );
+
   const [wasteCase] = await db
     .select()
     .from(wasteCases)
-    .where(
-      and(
-        eq(wasteCases.id, reportId),
-        eq(wasteCases.reporterId, reporterId),
-      ),
-    )
+    .where(whereCondition)
     .limit(1);
 
   if (!wasteCase) {
