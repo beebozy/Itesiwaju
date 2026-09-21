@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../auth/logic/auth_provider.dart';
 import '../../auth/presentation/login_screen.dart';
 import '../../reports/data/report_model.dart';
+import '../../reports/logic/reports_providers.dart';
 import '../../reports/presentation/reports_feed_screen.dart';
 import '../../reports/presentation/widgets/case_status_chip.dart';
 import '../logic/collector_providers.dart';
@@ -98,7 +99,11 @@ class _CollectorDashboardScreenState
             tooltip: 'Sign Out',
             icon: const Icon(Icons.logout, color: AppColors.textMuted),
             onPressed: () async {
+              ref.invalidate(collectorProvider);
+              ref.invalidate(myReportsProvider);
               await ref.read(authProvider.notifier).logout();
+              ref.invalidate(collectorProvider);
+              ref.invalidate(myReportsProvider);
               if (context.mounted) {
                 Navigator.pushAndRemoveUntil(
                   context,

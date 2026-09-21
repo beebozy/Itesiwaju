@@ -28,6 +28,11 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
   void initState() {
     super.initState();
     _loadUser();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.invalidate(myReportsProvider);
+      }
+    });
   }
 
   Future<void> _loadUser() async {
@@ -37,6 +42,8 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
       setState(() {
         if (name != null && name.isNotEmpty) {
           _userName = name.split(' ').first;
+        } else {
+          _userName = 'Citizen';
         }
         _userRole = role;
       });
@@ -71,7 +78,9 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
     );
 
     if (confirmed == true && mounted) {
+      ref.invalidate(myReportsProvider);
       await ref.read(authProvider.notifier).logout();
+      ref.invalidate(myReportsProvider);
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,

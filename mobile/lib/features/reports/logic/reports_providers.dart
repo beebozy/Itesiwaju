@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/storage/token_storage.dart';
 import '../../auth/logic/auth_provider.dart';
 import '../data/report_model.dart';
 import '../data/reports_repository.dart';
@@ -9,7 +10,17 @@ final reportsRepositoryProvider = Provider<ReportsRepository>((ref) {
   return ReportsRepository(client);
 });
 
-final myReportsProvider = FutureProvider<List<WasteCaseModel>>((ref) async {
+final myReportsProvider =
+    FutureProvider.autoDispose<List<WasteCaseModel>>((ref) async {
+  // Watching authProvider ensures that if user logs in, logs out, or switches account,
+  // this provider re-evaluates fresh
+  ref.watch(authProvider);
+
+  final isLoggedIn = await TokenStorage.isLoggedIn();
+  if (!isLoggedIn) {
+    return [];
+  }
+
   final repo = ref.watch(reportsRepositoryProvider);
   return repo.getMyReports();
 });
@@ -17,7 +28,7 @@ final myReportsProvider = FutureProvider<List<WasteCaseModel>>((ref) async {
 final reportsFeedProvider = myReportsProvider;
 
 final reportDetailProvider =
-    FutureProvider.family<ReportDetailModel, String>((ref, id) async {
+    FutureProvider.family.autoDispose<ReportDetailModel, String>((ref, id) async {
   final repo = ref.watch(reportsRepositoryProvider);
   return repo.getReportById(id);
 });

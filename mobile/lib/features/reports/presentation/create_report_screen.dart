@@ -62,6 +62,168 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
     }
   }
 
+  void _showPhotoSourceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.darkCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.textMuted.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Upload Evidence Photo',
+                style: TextStyle(
+                  color: AppColors.textLight,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Select capture method for geotagged waste evidence',
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+                ),
+                tileColor: AppColors.darkSurface,
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.camera_alt_rounded,
+                      color: AppColors.primary, size: 22),
+                ),
+                title: const Text(
+                  'Take Photo with Camera',
+                  style: TextStyle(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Capture live waste situation now',
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios,
+                    size: 14, color: AppColors.textMuted),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              const SizedBox(height: 10),
+              ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: AppColors.darkBorder),
+                ),
+                tileColor: AppColors.darkSurface,
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.darkBg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.photo_library_rounded,
+                      color: AppColors.primary, size: 22),
+                ),
+                title: const Text(
+                  'Choose from Gallery',
+                  style: TextStyle(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Upload an existing photo from storage',
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios,
+                    size: 14, color: AppColors.textMuted),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _viewSelectedImageFullScreen() {
+    if (_selectedImage == null) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              clipBehavior: Clip.none,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.file(
+                  File(_selectedImage!.path),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.7),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _detectLocation() async {
     setState(() {
       _isLocating = true;
@@ -256,14 +418,54 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. Photo Picker Section
-              Text(
-                AppTranslations.tr('takePhoto', lang),
-                style: const TextStyle(
-                  color: AppColors.textLight,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+              // 1. Photo Picker Section Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.camera_alt_outlined,
+                          size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppTranslations.tr('takePhoto', lang),
+                        style: const TextStyle(
+                          color: AppColors.textLight,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        '*',
+                        style: TextStyle(
+                          color: AppColors.statusRejected,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.statusRejected.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                          color: AppColors.statusRejected.withOpacity(0.3)),
+                    ),
+                    child: const Text(
+                      'REQUIRED',
+                      style: TextStyle(
+                        color: AppColors.statusRejected,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
 
@@ -272,25 +474,124 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   borderRadius: BorderRadius.circular(16),
                   child: Stack(
                     children: [
-                      Image.file(
-                        File(_selectedImage!.path),
-                        width: double.infinity,
-                        height: 220,
-                        fit: BoxFit.cover,
+                      GestureDetector(
+                        onTap: _viewSelectedImageFullScreen,
+                        child: Image.file(
+                          File(_selectedImage!.path),
+                          width: double.infinity,
+                          height: 220,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                       Positioned(
                         top: 10,
+                        left: 10,
                         right: 10,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.black.withOpacity(0.6),
-                          child: IconButton(
-                            icon: const Icon(Icons.close,
-                                color: Colors.white, size: 18),
-                            onPressed: () {
-                              setState(() {
-                                _selectedImage = null;
-                              });
-                            },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.75),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: AppColors.statusResolved
+                                        .withOpacity(0.5)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.check_circle,
+                                      size: 14,
+                                      color: AppColors.statusResolved),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'Photo Ready',
+                                    style: TextStyle(
+                                      color: AppColors.textLight,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                InkWell(
+                                  onTap: () => _showPhotoSourceSheet(context),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.75),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                          color: AppColors.primary
+                                              .withOpacity(0.5)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(Icons.cached,
+                                            size: 14, color: AppColors.primary),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Change',
+                                          style: TextStyle(
+                                            color: AppColors.textLight,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor:
+                                      Colors.black.withOpacity(0.75),
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: const Icon(Icons.close,
+                                        color: Colors.white, size: 16),
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedImage = null;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 8,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.zoom_in,
+                                  size: 12, color: Colors.white70),
+                              SizedBox(width: 4),
+                              Text('Tap to inspect',
+                                  style: TextStyle(
+                                      color: Colors.white70, fontSize: 10)),
+                            ],
                           ),
                         ),
                       ),
@@ -298,146 +599,192 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   ),
                 ),
               ] else ...[
-                Container(
-                  height: 190,
-                  decoration: BoxDecoration(
-                    color: AppColors.darkCard,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _showPhotoSourceSheet(context),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: AppColors.primary.withOpacity(0.3),
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Viewfinder corner marks
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              top: BorderSide(color: AppColors.primary, width: 2),
-                              left: BorderSide(color: AppColors.primary, width: 2),
-                            ),
-                          ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 22, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.darkCard,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.4),
+                          width: 1.5,
                         ),
                       ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              top: BorderSide(color: AppColors.primary, width: 2),
-                              right: BorderSide(color: AppColors.primary, width: 2),
+                      child: Stack(
+                        children: [
+                          // Viewfinder corner marks
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                  left: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 10,
-                        left: 10,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: AppColors.primary, width: 2),
-                              left: BorderSide(color: AppColors.primary, width: 2),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                  right: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 10,
-                        right: 10,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: AppColors.primary, width: 2),
-                              right: BorderSide(color: AppColors.primary, width: 2),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                  left: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 16,
+                              height: 16,
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                  right: BorderSide(
+                                      color: AppColors.primary, width: 2.5),
+                                ),
+                              ),
+                            ),
+                          ),
 
-                      // Center picker options
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.15),
-                                shape: BoxShape.circle,
+                          // Center picker options
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color:
+                                          AppColors.primary.withOpacity(0.3)),
+                                ),
+                                child: const Icon(Icons.add_a_photo_outlined,
+                                    color: AppColors.primary, size: 28),
                               ),
-                              child: const Icon(Icons.camera_alt_outlined,
-                                  color: AppColors.primary, size: 26),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Capture Geotagged Waste Evidence',
-                              style: TextStyle(
-                                color: AppColors.textLight,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
+                              const SizedBox(height: 12),
+                              Text(
+                                AppTranslations.tr('captureEvidence', lang),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: AppColors.textLight,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 4),
+                              Text(
+                                AppTranslations.tr('takeOrUpload', lang),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 11),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      onPressed: () =>
+                                          _pickImage(ImageSource.camera),
+                                      icon: const Icon(Icons.camera_alt,
+                                          size: 16),
+                                      label: Text(
+                                        AppTranslations.tr('camera', lang),
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700),
+                                      ),
                                     ),
                                   ),
-                                  onPressed: () =>
-                                      _pickImage(ImageSource.camera),
-                                  icon: const Icon(Icons.camera, size: 16),
-                                  label: const Text('Camera',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                                ),
-                                const SizedBox(width: 10),
-                                OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.textLight,
-                                    side: const BorderSide(
-                                        color: AppColors.darkBorder),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.textLight,
+                                        backgroundColor: AppColors.darkSurface,
+                                        side: const BorderSide(
+                                            color: AppColors.darkBorder),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 11),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      onPressed: () =>
+                                          _pickImage(ImageSource.gallery),
+                                      icon: const Icon(
+                                          Icons.photo_library_outlined,
+                                          size: 16,
+                                          color: AppColors.primary),
+                                      label: Text(
+                                        AppTranslations.tr('gallery', lang),
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700),
+                                      ),
                                     ),
                                   ),
-                                  onPressed: () =>
-                                      _pickImage(ImageSource.gallery),
-                                  icon: const Icon(Icons.photo_library_outlined,
-                                      size: 16),
-                                  label: const Text('Gallery',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -447,13 +794,20 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    AppTranslations.tr('location', lang),
-                    style: const TextStyle(
-                      color: AppColors.textLight,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined,
+                          size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppTranslations.tr('location', lang),
+                        style: const TextStyle(
+                          color: AppColors.textLight,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                   if (_isLocating)
                     const SizedBox(
@@ -471,9 +825,13 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                       icon: const Icon(Icons.my_location,
                           size: 15, color: AppColors.primary),
                       label: Text(
-                        _currentPosition != null ? 'Refresh GPS' : 'Acquire GPS',
+                        _currentPosition != null
+                            ? 'Refresh GPS'
+                            : 'Acquire GPS',
                         style: const TextStyle(
-                            color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w700),
+                            color: AppColors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700),
                       ),
                     ),
                 ],
@@ -573,14 +931,29 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
               ),
               const SizedBox(height: 24),
 
-              // 3. Description
-              Text(
-                AppTranslations.tr('description', lang),
-                style: const TextStyle(
-                  color: AppColors.textLight,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+              // 3. Description Section
+              Row(
+                children: [
+                  const Icon(Icons.notes_rounded,
+                      size: 16, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppTranslations.tr('description', lang),
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '(${AppTranslations.tr('optional', lang)})',
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -593,14 +966,21 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
               ),
               const SizedBox(height: 24),
 
-              // 4. Privacy Level
-              Text(
-                AppTranslations.tr('privacy', lang),
-                style: const TextStyle(
-                  color: AppColors.textLight,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+              // 4. Privacy Level Section
+              Row(
+                children: [
+                  const Icon(Icons.shield_outlined,
+                      size: 16, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppTranslations.tr('privacyLevel', lang),
+                    style: const TextStyle(
+                      color: AppColors.textLight,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Row(

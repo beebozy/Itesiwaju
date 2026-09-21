@@ -7,6 +7,8 @@ import 'package:mobile/features/profile/presentation/language_dialog.dart';
 import 'package:mobile/core/storage/token_storage.dart';
 import 'package:mobile/features/collector/presentation/collector_dashboard_screen.dart';
 import 'package:mobile/features/reports/presentation/reports_feed_screen.dart';
+import 'package:mobile/features/reports/logic/reports_providers.dart';
+import 'package:mobile/features/collector/logic/collector_providers.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -38,6 +40,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
     if (success && mounted) {
+      ref.invalidate(myReportsProvider);
+      ref.invalidate(collectorProvider);
       final role = await TokenStorage.getUserRole();
       if (!mounted) return;
       if (role == 'COLLECTOR' || role == 'PSP_OPERATOR') {
