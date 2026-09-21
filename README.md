@@ -1,4 +1,4 @@
-# ITESIWAJU https://itesiwaju-etnj.vercel.app/(report dashboard)
+# ITESIWAJU  https://itesiwaju-etnj.vercel.app [this is for the admin/waste management dashboard)
 
 ### Digital Waste Management, Accountability & Community Intelligence Platform 
 
