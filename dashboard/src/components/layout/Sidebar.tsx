@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -10,7 +11,10 @@ import {
   ShieldCheck,
   Building2,
   FileCheck2,
+  LogIn,
+  LogOut,
 } from "lucide-react";
+import { getStoredToken, getStoredUser, logoutAgency } from "@/lib/api";
 
 const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
@@ -21,6 +25,23 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [hasToken, setHasToken] = useState<boolean>(false);
+
+  useEffect(() => {
+    const token = getStoredToken();
+    const storedUser = getStoredUser();
+    setHasToken(!!token);
+    setUser(storedUser);
+  }, [pathname]);
+
+  const handleLogout = () => {
+    logoutAgency();
+    setUser(null);
+    setHasToken(false);
+    router.push("/login");
+  };
 
   return (
     <aside className="w-64 bg-surface border-r border-surface-border flex flex-col justify-between shrink-0 h-screen sticky top-0">
@@ -84,20 +105,40 @@ export function Sidebar() {
 
       {/* Footer / User info */}
       <div className="p-4 border-t border-surface-border">
-        <div className="flex items-center gap-3 p-2 bg-background/60 rounded-lg">
-          <div className="w-8 h-8 rounded-full bg-surface-border flex items-center justify-center font-bold text-xs text-gray-300">
-            LA
-          </div>
-          <div className="overflow-hidden">
-            <div className="text-xs font-bold text-white truncate">
-              LAWMA Supervisor
+        {hasToken ? (
+          <div className="flex items-center justify-between p-2 bg-background/60 rounded-lg">
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary shrink-0">
+                {user?.fullName ? user.fullName[0].toUpperCase() : "OP"}
+              </div>
+              <div className="overflow-hidden">
+                <div className="text-xs font-bold text-white truncate">
+                  {user?.fullName || "Agency Operator"}
+                </div>
+                <div className="text-[10px] text-primary font-semibold tracking-wide uppercase truncate">
+                  {user?.role || "AGENCY_OPERATOR"}
+                </div>
+              </div>
             </div>
-            <div className="text-[11px] text-gray-400 truncate">
-              HQ Control Room #4
-            </div>
+            <button
+              onClick={handleLogout}
+              title="Sign Out"
+              className="p-1.5 text-gray-400 hover:text-white hover:bg-surface-border rounded transition shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-        </div>
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-primary/15 hover:bg-primary/25 border border-primary/30 text-primary rounded-lg text-xs font-bold transition"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Sign In to Dispatch</span>
+          </Link>
+        )}
       </div>
     </aside>
   );
 }
+

@@ -120,18 +120,19 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: 'Collector Console ($_userRole)',
-            icon: const Icon(Icons.local_shipping_outlined, color: AppColors.statusAssigned),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CollectorDashboardScreen(),
-                ),
-              );
-            },
-          ),
+          if (_userRole == 'COLLECTOR' || _userRole == 'PSP_OPERATOR')
+            IconButton(
+              tooltip: 'Collector Console',
+              icon: const Icon(Icons.local_shipping_outlined, color: AppColors.statusAssigned),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CollectorDashboardScreen(),
+                  ),
+                );
+              },
+            ),
           IconButton(
             tooltip: 'Change Language',
             icon: const Icon(Icons.language, color: AppColors.primary),

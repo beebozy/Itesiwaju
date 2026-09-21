@@ -204,3 +204,51 @@ export async function assignCaseApi(
 
   return res.json();
 }
+
+export async function loginAgencyApi(email: string, password: string): Promise<any> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error?.message || "Invalid email or password");
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem("lawma_access_token", json.data.accessToken);
+    localStorage.setItem("lawma_user", JSON.stringify(json.data.user));
+  }
+
+  return json.data;
+}
+
+export function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("lawma_access_token");
+}
+
+export function getStoredUser(): any {
+  if (typeof window === "undefined") return null;
+  const user = localStorage.getItem("lawma_user");
+  return user ? JSON.parse(user) : null;
+}
+
+export function logoutAgency(): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("lawma_access_token");
+    localStorage.removeItem("lawma_user");
+  }
+}
+
+export function setStoredSession(token: string, user?: any): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("lawma_access_token", token);
+    if (user) {
+      localStorage.setItem("lawma_user", JSON.stringify(user));
+    }
+  }
+}
+

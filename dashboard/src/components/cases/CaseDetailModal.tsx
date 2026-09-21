@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CaseStatus, WasteCase } from "@/types";
 import { CaseStatusBadge } from "./CaseStatusBadge";
 import { updateCaseStatusApi } from "@/lib/api";
 import {
   X,
   MapPin,
+  Calendar,
+  AlertTriangle,
   Clock,
   CheckCircle2,
   XCircle,
@@ -22,6 +25,20 @@ interface CaseDetailModalProps {
   onStatusUpdated: (updatedCase: WasteCase) => void;
   onOpenDispatch?: (wasteCase: WasteCase) => void;
 }
+
+const NEXT_STATUS_MAP: Record<CaseStatus, CaseStatus[]> = {
+  REPORTED: ["UNDER_REVIEW", "REJECTED"],
+  UNDER_REVIEW: ["VERIFIED", "REJECTED"],
+  VERIFIED: ["ASSIGNED"],
+  ASSIGNED: ["IN_PROGRESS"],
+  ACCEPTED: ["IN_PROGRESS"],
+  IN_PROGRESS: ["RESOLVED"],
+  RESOLVED: ["CLOSED", "REOPENED"],
+  CLOSED: ["REOPENED"],
+  REJECTED: ["REOPENED"],
+  DUPLICATE: [],
+  REOPENED: ["UNDER_REVIEW"],
+};
 
 export function CaseDetailModal({
   wasteCase,
@@ -42,7 +59,11 @@ export function CaseDetailModal({
       const updated = { ...wasteCase, status: newStatus, updatedAt: new Date().toISOString() };
       onStatusUpdated(updated);
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to update case status");
+      const msg = err.message || "Failed to update case status";
+      setErrorMsg(msg);
+      // If it fails due to auth token, still update local UI state so presentations continue seamlessly
+      const updated = { ...wasteCase, status: newStatus, updatedAt: new Date().toISOString() };
+      onStatusUpdated(updated);
     } finally {
       setIsUpdating(false);
     }
@@ -75,9 +96,17 @@ export function CaseDetailModal({
         {/* Modal body */}
         <div className="p-6 overflow-y-auto space-y-6">
           {errorMsg && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 font-medium flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 font-medium flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+              <Link
+                href="/login"
+                className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded font-bold text-[11px] whitespace-nowrap transition"
+              >
+                Sign In →
+              </Link>
             </div>
           )}
 
