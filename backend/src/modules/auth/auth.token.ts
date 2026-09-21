@@ -9,6 +9,6 @@ export interface AccessTokenPayload {
 
 export function createAccessToken(payload: AccessTokenPayload) {
   return jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "60m",
   });
 }
