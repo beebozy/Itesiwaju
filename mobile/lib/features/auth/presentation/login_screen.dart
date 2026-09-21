@@ -4,6 +4,8 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/l10n/app_translations.dart';
 import 'package:mobile/features/auth/logic/auth_provider.dart';
 import 'package:mobile/features/profile/presentation/language_dialog.dart';
+import 'package:mobile/core/storage/token_storage.dart';
+import 'package:mobile/features/collector/presentation/collector_dashboard_screen.dart';
 import 'package:mobile/features/reports/presentation/reports_feed_screen.dart';
 import 'register_screen.dart';
 
@@ -36,10 +38,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
     if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ReportsFeedScreen()),
-      );
+      final role = await TokenStorage.getUserRole();
+      if (!mounted) return;
+      if (role == 'COLLECTOR' || role == 'PSP_OPERATOR') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const CollectorDashboardScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ReportsFeedScreen()),
+        );
+      }
     }
   }
 

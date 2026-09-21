@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/storage/token_storage.dart';
+import 'package:mobile/features/collector/presentation/collector_dashboard_screen.dart';
 import 'package:mobile/features/reports/presentation/reports_feed_screen.dart';
 import 'login_screen.dart';
 
@@ -21,14 +22,25 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuth() async {
     await Future.delayed(const Duration(seconds: 2));
     final loggedIn = await TokenStorage.isLoggedIn();
+    final role = await TokenStorage.getUserRole();
     if (!mounted) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => loggedIn ? const ReportsFeedScreen() : const LoginScreen(),
-      ),
-    );
+    if (!loggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } else if (role == 'COLLECTOR' || role == 'PSP_OPERATOR') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const CollectorDashboardScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ReportsFeedScreen()),
+      );
+    }
   }
 
   @override

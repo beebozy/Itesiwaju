@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../auth/logic/auth_provider.dart';
+import '../../auth/presentation/login_screen.dart';
 import '../../reports/data/report_model.dart';
+import '../../reports/presentation/reports_feed_screen.dart';
 import '../../reports/presentation/widgets/case_status_chip.dart';
 import '../logic/collector_providers.dart';
 import 'resolution_upload_dialog.dart';
@@ -79,9 +82,34 @@ class _CollectorDashboardScreenState
         ),
         actions: [
           IconButton(
+            tooltip: 'Citizen Feed',
+            icon: const Icon(Icons.public, color: AppColors.textMuted),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ReportsFeedScreen()),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: AppColors.textMuted),
             onPressed: () =>
                 ref.read(collectorProvider.notifier).fetchTasks(),
+          ),
+          IconButton(
+            tooltip: 'Sign Out',
+            icon: const Icon(Icons.logout, color: AppColors.textMuted),
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
           ),
         ],
       ),
