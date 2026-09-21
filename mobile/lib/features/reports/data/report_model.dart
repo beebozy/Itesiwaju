@@ -44,6 +44,34 @@ class WasteCaseModel {
           : DateTime.now(),
     );
   }
+
+  WasteCaseModel copyWith({
+    String? id,
+    String? caseNumber,
+    String? source,
+    String? status,
+    String? description,
+    String? latitude,
+    String? longitude,
+    String? locationAccuracy,
+    String? privacyLevel,
+    DateTime? reportedAt,
+    DateTime? createdAt,
+  }) {
+    return WasteCaseModel(
+      id: id ?? this.id,
+      caseNumber: caseNumber ?? this.caseNumber,
+      source: source ?? this.source,
+      status: status ?? this.status,
+      description: description ?? this.description,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      locationAccuracy: locationAccuracy ?? this.locationAccuracy,
+      privacyLevel: privacyLevel ?? this.privacyLevel,
+      reportedAt: reportedAt ?? this.reportedAt,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 class EvidenceModel {

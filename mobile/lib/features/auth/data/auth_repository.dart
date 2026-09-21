@@ -61,6 +61,7 @@ class AuthRepository {
         name: user.fullName,
         email: user.email,
         phone: user.phone,
+        role: user.role,
         language: user.preferredLanguage,
       );
 

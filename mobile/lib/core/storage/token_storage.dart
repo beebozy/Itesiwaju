@@ -6,6 +6,7 @@ class TokenStorage {
   static const String _keyUserName = 'user_name';
   static const String _keyUserEmail = 'user_email';
   static const String _keyUserPhone = 'user_phone';
+  static const String _keyUserRole = 'user_role';
   static const String _keyLanguage = 'preferred_language';
 
   static Future<void> saveSession({
@@ -14,6 +15,7 @@ class TokenStorage {
     required String name,
     required String email,
     required String phone,
+    String role = 'CITIZEN',
     String language = 'en',
   }) async {
     final prefs = await SharedPreferences.getInstance();
@@ -22,6 +24,7 @@ class TokenStorage {
     await prefs.setString(_keyUserName, name);
     await prefs.setString(_keyUserEmail, email);
     await prefs.setString(_keyUserPhone, phone);
+    await prefs.setString(_keyUserRole, role);
     await prefs.setString(_keyLanguage, language);
   }
 
@@ -38,6 +41,16 @@ class TokenStorage {
   static Future<String?> getUserEmail() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyUserEmail);
+  }
+
+  static Future<String> getUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyUserRole) ?? 'CITIZEN';
+  }
+
+  static Future<void> setUserRole(String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyUserRole, role);
   }
 
   static Future<String> getLanguage() async {
@@ -62,5 +75,6 @@ class TokenStorage {
     await prefs.remove(_keyUserName);
     await prefs.remove(_keyUserEmail);
     await prefs.remove(_keyUserPhone);
+    await prefs.remove(_keyUserRole);
   }
 }

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/core/l10n/app_translations.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/l10n/app_translations.dart';
 import 'package:mobile/features/reports/logic/reports_providers.dart';
 
 class CreateReportScreen extends ConsumerStatefulWidget {
@@ -21,6 +21,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   XFile? _selectedImage;
   Position? _currentPosition;
   bool _isLocating = false;
+  bool _isUploading = false;
   String? _locationError;
   String _privacyLevel = 'PRIVATE';
 
@@ -127,10 +128,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
       return;
     }
 
-    // Temporary image URL or placeholder image for API integration demonstration
-    // If running on local device with file path, we create a valid demo URL or upload
-    final imageUrl =
-        'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80';
+    setState(() {
+      _isUploading = true;
+    });
 
     final success = await ref.read(createReportProvider.notifier).submit(
           description: _descriptionController.text.trim(),
@@ -138,9 +138,15 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
           longitude: _currentPosition?.longitude.toString(),
           locationAccuracy: _currentPosition?.accuracy.toStringAsFixed(1),
           privacyLevel: _privacyLevel,
-          imageUrl: imageUrl,
+          imagePath: _selectedImage!.path,
           capturedAt: DateTime.now(),
         );
+
+    if (mounted) {
+      setState(() {
+        _isUploading = false;
+      });
+    }
 
     if (success && mounted) {
       final created = ref.read(createReportProvider).createdCase;
@@ -621,8 +627,10 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
 
               // Submit Button
               ElevatedButton(
-                onPressed: reportState.isSubmitting ? null : _handleSubmit,
-                child: reportState.isSubmitting
+                onPressed: (_isUploading || reportState.isSubmitting)
+                    ? null
+                    : _handleSubmit,
+                child: (_isUploading || reportState.isSubmitting)
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -636,7 +644,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text(AppTranslations.tr('submitting', lang)),
+                          Text(_isUploading
+                              ? 'Uploading photo...'
+                              : AppTranslations.tr('submitting', lang)),
                         ],
                       )
                     : Text(AppTranslations.tr('submitReport', lang)),

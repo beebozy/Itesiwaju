@@ -8,6 +8,7 @@ import 'package:mobile/features/auth/logic/auth_provider.dart';
 import 'package:mobile/features/auth/presentation/login_screen.dart';
 import 'package:mobile/features/profile/presentation/language_dialog.dart';
 import 'package:mobile/features/reports/logic/reports_providers.dart';
+import '../../collector/presentation/collector_dashboard_screen.dart';
 import 'create_report_screen.dart';
 import 'report_detail_screen.dart';
 import 'widgets/case_status_chip.dart';
@@ -21,6 +22,7 @@ class ReportsFeedScreen extends ConsumerStatefulWidget {
 
 class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
   String _userName = 'Citizen';
+  String _userRole = 'CITIZEN';
 
   @override
   void initState() {
@@ -30,9 +32,13 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
 
   Future<void> _loadUser() async {
     final name = await TokenStorage.getUserName();
-    if (name != null && name.isNotEmpty && mounted) {
+    final role = await TokenStorage.getUserRole();
+    if (mounted) {
       setState(() {
-        _userName = name.split(' ').first;
+        if (name != null && name.isNotEmpty) {
+          _userName = name.split(' ').first;
+        }
+        _userRole = role;
       });
     }
   }
@@ -114,6 +120,18 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Collector Console ($_userRole)',
+            icon: const Icon(Icons.local_shipping_outlined, color: AppColors.statusAssigned),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CollectorDashboardScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Change Language',
             icon: const Icon(Icons.language, color: AppColors.primary),

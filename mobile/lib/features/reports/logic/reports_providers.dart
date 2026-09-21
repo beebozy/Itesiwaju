@@ -54,7 +54,8 @@ class CreateReportNotifier extends StateNotifier<CreateReportState> {
     String? longitude,
     String? locationAccuracy,
     String privacyLevel = 'PRIVATE',
-    required String imageUrl,
+    String? imagePath,
+    String? imageUrl,
     DateTime? capturedAt,
   }) async {
     state = state.copyWith(isSubmitting: true, error: null);
@@ -65,6 +66,7 @@ class CreateReportNotifier extends StateNotifier<CreateReportState> {
         longitude: longitude,
         locationAccuracy: locationAccuracy,
         privacyLevel: privacyLevel,
+        imagePath: imagePath,
         imageUrl: imageUrl,
         capturedAt: capturedAt,
       );

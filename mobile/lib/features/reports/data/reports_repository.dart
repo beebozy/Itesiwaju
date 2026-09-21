@@ -40,22 +40,45 @@ class ReportsRepository {
     String? longitude,
     String? locationAccuracy,
     String privacyLevel = 'PRIVATE',
-    required String imageUrl,
+    String? imagePath,
+    String? imageUrl,
     DateTime? capturedAt,
   }) async {
     try {
-      final response = await _client.dio.post(
-        ApiEndpoints.reports,
-        data: {
+      dynamic requestData;
+
+      if (imagePath != null && imagePath.isNotEmpty) {
+        final fileName = imagePath.split('/').last;
+        requestData = FormData.fromMap({
+          'photo': await MultipartFile.fromFile(
+            imagePath,
+            filename: fileName,
+          ),
           if (description != null && description.isNotEmpty)
             'description': description,
           if (latitude != null) 'latitude': latitude,
           if (longitude != null) 'longitude': longitude,
           if (locationAccuracy != null) 'locationAccuracy': locationAccuracy,
           'privacyLevel': privacyLevel,
-          'imageUrl': imageUrl,
+          if (imageUrl != null) 'imageUrl': imageUrl,
+          if (capturedAt != null) 'capturedAt': capturedAt.toIso8601String(),
+        });
+      } else {
+        requestData = {
+          if (description != null && description.isNotEmpty)
+            'description': description,
+          if (latitude != null) 'latitude': latitude,
+          if (longitude != null) 'longitude': longitude,
+          if (locationAccuracy != null) 'locationAccuracy': locationAccuracy,
+          'privacyLevel': privacyLevel,
+          if (imageUrl != null) 'imageUrl': imageUrl,
           'capturedAt': (capturedAt ?? DateTime.now()).toIso8601String(),
-        },
+        };
+      }
+
+      final response = await _client.dio.post(
+        ApiEndpoints.reports,
+        data: requestData,
       );
 
       final data = response.data['data'];
@@ -63,9 +86,20 @@ class ReportsRepository {
           WasteCaseModel.fromJson(data['wasteCase'] as Map<String, dynamic>);
       return wasteCase;
     } on DioException catch (e) {
-      throw e.error?.toString() ?? 'Failed to submit report';
+      if (e.response?.data != null && e.response?.data is Map) {
+        final err = e.response?.data['error'];
+        if (err is Map) {
+          final msg = err['message'] ?? err['code'];
+          final details = err['details'];
+          if (details != null && details is String) {
+            throw '$msg ($details)';
+          }
+          if (msg != null) throw msg.toString();
+        }
+      }
+      throw e.error?.toString() ?? e.message ?? 'Failed to submit report';
     } catch (e) {
-      throw 'An unexpected error occurred';
+      throw e.toString();
     }
   }
 }
