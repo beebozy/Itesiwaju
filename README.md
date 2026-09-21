@@ -1,6 +1,6 @@
-# ITESIWAJU
+# ITESIWAJU https://itesiwaju-etnj.vercel.app/(report dashboard)
 
-### Digital Waste Management, Accountability & Community Intelligence Platform
+### Digital Waste Management, Accountability & Community Intelligence Platform 
 
 **Itesiwaju** is a digital waste-management and accountability platform that connects **citizens, PSP operators, waste-management agencies, and collectors** through a unified case-management system.
 
@@ -8,7 +8,7 @@ Citizens can report sanitation problems using a **mobile application or WhatsApp
 
 The platform transforms a simple citizen complaint into a **traceable operational case** with evidence, accountability, SLA monitoring, and resolution tracking.
 
-> **Report → Verify → Assign → Resolve → Verify → Close**
+**Report → Verify → Assign → Resolve → Verify → Close** 
 
 ---
 
@@ -37,7 +37,7 @@ A citizen can report a waste problem through the mobile application or WhatsApp.
 ```text
 Citizen
    │
-   ├── Mobile App
+   ├── *Mobile App
    │
    └── WhatsApp
           │
@@ -83,7 +83,7 @@ The important architectural principle is that **all reporting channels create th
 The mobile application and WhatsApp bot do not implement separate case-management logic.
 
 ```text
-Mobile App ───────┐
+* Mobile App ───────┐
                   │
 WhatsApp Bot ─────┼──→ ReportService → WasteCase
                   │
@@ -428,6 +428,17 @@ Escalation policies are configurable by deployment.
 
 ---
 
+
+# 13. Multilingual Support
+
+The platform is designed for localized deployments.
+
+Initial target languages include:
+
+* English
+* Yoruba
+* Nigerian Pidgin
+**Improvement to me made**
 # 10. Clean Street Score
 
 Itesiwaju can calculate a **Clean Street Score** ranging from 0–100.
@@ -516,15 +527,7 @@ Because standard USSD cannot carry photos, reports can be created using basic in
 
 ---
 
-# 13. Multilingual Support
 
-The platform is designed for localized deployments.
-
-Initial target languages include:
-
-* English
-* Yoruba
-* Nigerian Pidgin
 
 The backend stores a user's preferred language and frontend messages use translation keys rather than hardcoded text.
 
@@ -896,61 +899,10 @@ CLOUDINARY_API_SECRET=
 
 ROBOFLOW_API_KEY=
 ROBOFLOW_MODEL_URL=
-```
 
-Never commit secrets or `.env` files to Git.
 
----
 
-# 23. Getting Started
-
-## Prerequisites
-
-Make sure you have:
-
-* Node.js
-* npm
-* PostgreSQL/Supabase database
-* Cloudinary or another object-storage provider
-* Roboflow account/API access
-* WhatsApp Business Platform credentials for WhatsApp functionality
-
-## Clone the repository
-
-```bash
-git clone <repository-url>
-cd itesiwaju
-```
-
-## Install dependencies
-
-```bash
-npm install
-```
-
-## Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-Update `.env` with your local configuration.
-
-## Run development server
-
-```bash
-npm run dev
-```
-
-The API should then be available at:
-
-```text
-http://localhost:3000
-```
-
----
-
-# 24. Development Roadmap
+# 23. Development Roadmap
 
 The project is being developed incrementally.
 
@@ -1014,7 +966,7 @@ The project is being developed incrementally.
 
 ---
 
-# 25. Documentation
+# 24. Documentation
 
 The repository contains detailed architecture documentation covering the individual system components.
 
@@ -1093,7 +1045,7 @@ Describes:
 
 ---
 
-# 26. Design Principles
+# 25. Design Principles
 
 Itesiwaju follows several core principles:
 
@@ -1135,7 +1087,7 @@ SLA policies, escalation rules, languages, service areas, and institutional work
 
 ---
 
-# 27. Vision
+# 26. Vision
 
 Itesiwaju is designed to move waste-management reporting from:
 
