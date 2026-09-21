@@ -61,7 +61,11 @@ export async function fetchAllCases(): Promise<WasteCase[]> {
     }
 
     const json = await res.json();
-    return json.data || [];
+    const reports = json.data || [];
+    return reports.map((r: any) => ({
+      ...r,
+      imageUrl: r.imageUrl || r.mediaUrl || r.photoUrl || (r.evidence && r.evidence[0]?.mediaUrl) || null,
+    }));
   } catch (error) {
     console.warn("API fetch cases failed, using mock data:", error);
     return [
@@ -156,6 +160,23 @@ export async function fetchAllCases(): Promise<WasteCase[]> {
         imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80",
       },
     ];
+  }
+}
+
+export async function fetchCaseById(id: string): Promise<any> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/reports/${id}`, {
+      headers: {
+        ...getAuthHeader(),
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+  } catch {
+    return null;
   }
 }
 

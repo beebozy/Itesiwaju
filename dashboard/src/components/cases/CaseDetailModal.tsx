@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CaseStatus, WasteCase } from "@/types";
 import { CaseStatusBadge } from "./CaseStatusBadge";
-import { updateCaseStatusApi } from "@/lib/api";
+import { updateCaseStatusApi, fetchCaseById } from "@/lib/api";
 import {
   X,
   MapPin,
@@ -48,6 +48,20 @@ export function CaseDetailModal({
 }: CaseDetailModalProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [evidenceUrl, setEvidenceUrl] = useState<string | null>(
+    wasteCase?.imageUrl || (wasteCase as any)?.mediaUrl || null
+  );
+
+  useEffect(() => {
+    setEvidenceUrl(wasteCase?.imageUrl || (wasteCase as any)?.mediaUrl || null);
+    if (wasteCase?.id && !wasteCase?.imageUrl && !(wasteCase as any)?.mediaUrl) {
+      fetchCaseById(wasteCase.id).then((data) => {
+        if (data?.evidence && data.evidence.length > 0) {
+          setEvidenceUrl(data.evidence[0].mediaUrl);
+        }
+      });
+    }
+  }, [wasteCase?.id, wasteCase?.imageUrl]);
 
   if (!wasteCase) return null;
 
@@ -112,9 +126,9 @@ export function CaseDetailModal({
 
           {/* Photo & Geotag Preview */}
           <div className="rounded-xl overflow-hidden border border-surface-border bg-background relative aspect-video flex items-center justify-center">
-            {wasteCase.imageUrl ? (
+            {evidenceUrl ? (
               <img
-                src={wasteCase.imageUrl}
+                src={evidenceUrl}
                 alt="Incident Evidence"
                 className="w-full h-full object-cover"
               />

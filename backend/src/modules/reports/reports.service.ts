@@ -107,18 +107,58 @@ export async function createReport(input: CreateReportInput) {
 };
 
 export async function getAllReports() {
-  return db
+  const cases = await db
     .select()
     .from(wasteCases)
     .orderBy(desc(wasteCases.createdAt));
+
+  const allEvidence = await db
+    .select({
+      caseId: evidence.caseId,
+      mediaUrl: evidence.mediaUrl,
+      type: evidence.type,
+    })
+    .from(evidence);
+
+  const evidenceMap = new Map<string, string>();
+  for (const ev of allEvidence) {
+    if (!evidenceMap.has(ev.caseId) || ev.type === "REPORT_PHOTO") {
+      evidenceMap.set(ev.caseId, ev.mediaUrl);
+    }
+  }
+
+  return cases.map((c) => ({
+    ...c,
+    imageUrl: evidenceMap.get(c.id) || null,
+  }));
 }
 
 export async function getMyReports(reporterId: string) {
-  return db
+  const cases = await db
     .select()
     .from(wasteCases)
     .where(eq(wasteCases.reporterId, reporterId))
     .orderBy(desc(wasteCases.createdAt));
+
+  const allEvidence = await db
+    .select({
+      caseId: evidence.caseId,
+      mediaUrl: evidence.mediaUrl,
+      type: evidence.type,
+    })
+    .from(evidence);
+
+  const evidenceMap = new Map<string, string>();
+  for (const ev of allEvidence) {
+    if (!evidenceMap.has(ev.caseId) || ev.type === "REPORT_PHOTO") {
+      evidenceMap.set(ev.caseId, ev.mediaUrl);
+    }
+  }
+
+  return cases.map((c) => ({
+    ...c,
+    imageUrl: evidenceMap.get(c.id) || null,
+  }));
 }
 
 export async function getMyReportById(
