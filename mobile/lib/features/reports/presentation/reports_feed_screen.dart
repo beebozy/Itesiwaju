@@ -81,6 +81,39 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
     }
   }
 
+  Widget _buildStatPill(String label, String value, {Color color = AppColors.primary}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = ref.watch(languageProvider);
@@ -91,21 +124,13 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: const Text(
-                'I',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(width: 10),
@@ -188,7 +213,7 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Hello, $_userName 👋',
+                              'Welcome, $_userName',
                               style: const TextStyle(
                                 color: AppColors.textLight,
                                 fontSize: 22,
@@ -220,6 +245,40 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                             color: AppColors.textMuted,
                             fontSize: 13,
                           ),
+                        ),
+                        reportsAsync.maybeWhen(
+                          data: (reports) {
+                            if (reports.isEmpty) return const SizedBox.shrink();
+                            final resolved = reports
+                                .where((r) =>
+                                    r.status == 'RESOLVED' ||
+                                    r.status == 'CLOSED')
+                                .length;
+                            final inProgress = reports
+                                .where((r) =>
+                                    r.status == 'ASSIGNED' ||
+                                    r.status == 'IN_PROGRESS' ||
+                                    r.status == 'UNDER_REVIEW')
+                                .length;
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: Row(
+                                children: [
+                                  _buildStatPill(
+                                      'Reports', '${reports.length}'),
+                                  const SizedBox(width: 8),
+                                  _buildStatPill(
+                                      'Active', '$inProgress',
+                                      color: AppColors.statusAssigned),
+                                  const SizedBox(width: 8),
+                                  _buildStatPill(
+                                      'Cleaned', '$resolved',
+                                      color: AppColors.statusResolved),
+                                ],
+                              ),
+                            );
+                          },
+                          orElse: () => const SizedBox.shrink(),
                         ),
                       ],
                     ),
@@ -319,7 +378,7 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
                               color: AppColors.darkCard,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(color: AppColors.darkBorder),
                             ),
                             child: InkWell(
@@ -332,7 +391,7 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                                   ),
                                 );
                               },
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Column(
@@ -354,19 +413,64 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                                         CaseStatusChip(status: item.status),
                                       ],
                                     ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      (item.description != null &&
-                                              item.description!.isNotEmpty)
-                                          ? item.description!
-                                          : 'Waste incident reported via mobile',
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 13,
-                                        height: 1.4,
-                                      ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        if (item.imageUrl != null &&
+                                            item.imageUrl!.isNotEmpty)
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(right: 12),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Image.network(
+                                                item.imageUrl!,
+                                                width: 64,
+                                                height: 64,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) =>
+                                                    Container(
+                                                  width: 64,
+                                                  height: 64,
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.darkSurface,
+                                                    borderRadius:
+                                                        BorderRadius.circular(12),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.image_not_supported_outlined,
+                                                    size: 22,
+                                                    color: AppColors.textMuted,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                (item.description != null &&
+                                                        item.description!.isNotEmpty)
+                                                    ? item.description!
+                                                    : 'Waste incident reported via mobile',
+                                                maxLines: 2,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  color: AppColors.textMuted,
+                                                  fontSize: 13,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
@@ -377,7 +481,7 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                                           children: [
                                             const Icon(
                                               Icons.access_time,
-                                              size: 14,
+                                              size: 13,
                                               color: AppColors.textMuted,
                                             ),
                                             const SizedBox(width: 4),
@@ -386,6 +490,7 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                                               style: const TextStyle(
                                                 color: AppColors.textMuted,
                                                 fontSize: 11,
+                                                fontWeight: FontWeight.w500,
                                               ),
                                             ),
                                           ],
@@ -397,7 +502,7 @@ class _ReportsFeedScreenState extends ConsumerState<ReportsFeedScreen> {
                                               style: TextStyle(
                                                 color: AppColors.primary,
                                                 fontSize: 12,
-                                                fontWeight: FontWeight.w600,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                             Icon(

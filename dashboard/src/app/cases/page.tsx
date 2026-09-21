@@ -36,6 +36,9 @@ export default function CasesPage() {
   const [dispatchCase, setDispatchCase] = useState<WasteCase | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [selectedLga, setSelectedLga] = useState<string>("ALL");
+  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+
   const loadCases = async () => {
     setIsLoading(true);
     try {
@@ -52,11 +55,19 @@ export default function CasesPage() {
     loadCases();
   }, []);
 
+  const availableLgas = Array.from(
+    new Set(cases.map((c) => c.lga).filter(Boolean))
+  ) as string[];
+
   useEffect(() => {
     let result = cases;
 
     if (statusFilter !== "ALL") {
       result = result.filter((c) => c.status === statusFilter);
+    }
+
+    if (selectedLga !== "ALL") {
+      result = result.filter((c) => c.lga === selectedLga);
     }
 
     if (searchQuery.trim()) {
@@ -72,7 +83,7 @@ export default function CasesPage() {
     }
 
     setFilteredCases(result);
-  }, [cases, statusFilter, searchQuery]);
+  }, [cases, statusFilter, selectedLga, searchQuery]);
 
   const handleCaseUpdated = (updated: WasteCase) => {
     setCases((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
@@ -82,6 +93,11 @@ export default function CasesPage() {
   const handleCaseAssigned = (updated: WasteCase) => {
     setCases((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
     setDispatchCase(null);
+  };
+
+  const getStatusCount = (value: string) => {
+    if (value === "ALL") return cases.length;
+    return cases.filter((c) => c.status === value).length;
   };
 
   return (
@@ -95,42 +111,75 @@ export default function CasesPage() {
 
       <main className="p-8 space-y-6 max-w-7xl">
         {/* Filter and Search Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-4 rounded-xl border border-surface-border">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-surface-border shadow-sm">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setStatusFilter(f.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-                  statusFilter === f.value
-                    ? "bg-primary text-white"
-                    : "text-gray-400 hover:text-white hover:bg-surface-border"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+            {STATUS_FILTERS.map((f) => {
+              const count = getStatusCount(f.value);
+              const isActive = statusFilter === f.value;
+              return (
+                <button
+                  key={f.value}
+                  onClick={() => setStatusFilter(f.value)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    isActive
+                      ? "bg-primary text-white shadow-sm shadow-primary/20"
+                      : "text-gray-400 hover:text-white hover:bg-surface-border/60"
+                  }`}
+                >
+                  <span>{f.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-background/80 text-gray-400 border border-surface-border"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Search Input */}
-          <div className="relative min-w-[260px]">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search case #, street, or LGA..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-background border border-surface-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
-            />
+          {/* Right Filters: LGA Selector & Search Input */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* LGA Selector */}
+            <div className="relative">
+              <select
+                value={selectedLga}
+                onChange={(e) => setSelectedLga(e.target.value)}
+                className="bg-background border border-surface-border text-gray-300 text-xs rounded-xl px-3 py-2 pr-8 focus:outline-none focus:border-primary transition appearance-none cursor-pointer font-medium"
+              >
+                <option value="ALL">All LGAs</option>
+                {availableLgas.map((lga) => (
+                  <option key={lga} value={lga}>
+                    {lga}
+                  </option>
+                ))}
+              </select>
+              <Filter className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {/* Search Input */}
+            <div className="relative min-w-[240px]">
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search case #, street, or LGA..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-background border border-surface-border rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-primary transition"
+              />
+            </div>
           </div>
         </div>
 
         {/* Case Table */}
-        <div className="bg-surface rounded-xl border border-surface-border overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-2xl border border-surface-border overflow-hidden shadow-lg">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-surface-border bg-background/50 text-gray-400 uppercase tracking-wider font-bold">
+              <tr className="border-b border-surface-border bg-background/60 text-gray-400 uppercase tracking-wider font-bold text-[11px]">
                 <th className="py-3.5 px-4">Case #</th>
                 <th className="py-3.5 px-4">Evidence</th>
                 <th className="py-3.5 px-4">Location & Ward</th>
@@ -139,33 +188,77 @@ export default function CasesPage() {
                 <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-border">
-              {filteredCases.length === 0 ? (
+            <tbody className="divide-y divide-surface-border/60">
+              {isLoading ? (
+                // Shimmer Skeleton Loader
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="py-4 px-4">
+                      <div className="h-4 w-24 bg-surface-border rounded" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="w-12 h-12 rounded-xl bg-surface-border" />
+                    </td>
+                    <td className="py-4 px-4 space-y-2">
+                      <div className="h-4 w-40 bg-surface-border rounded" />
+                      <div className="h-3 w-28 bg-surface-border rounded" />
+                    </td>
+                    <td className="py-4 px-4 space-y-1.5">
+                      <div className="h-3.5 w-20 bg-surface-border rounded" />
+                      <div className="h-2.5 w-14 bg-surface-border rounded" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-6 w-24 bg-surface-border rounded-full" />
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <div className="h-7 w-16 bg-surface-border rounded-lg inline-block" />
+                    </td>
+                  </tr>
+                ))
+              ) : filteredCases.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-gray-500">
-                    No cases match the selected filter criteria.
+                  <td colSpan={6} className="py-16 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-surface-border/40 flex items-center justify-center text-gray-400">
+                        <Search className="w-5 h-5" />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-300">No incident records found</p>
+                      <p className="text-xs text-gray-500">
+                        Try adjusting your status filter, LGA selection, or search query.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 filteredCases.map((c) => (
                   <tr
                     key={c.id}
-                    className="hover:bg-background/40 transition-colors"
+                    className="hover:bg-background/40 transition-colors group"
                   >
                     <td className="py-4 px-4 font-mono font-bold text-white">
-                      {c.caseNumber}
+                      <span className="text-primary/90 group-hover:text-primary transition-colors">
+                        {c.caseNumber}
+                      </span>
                     </td>
 
                     <td className="py-4 px-4">
-                      <div className="w-12 h-12 rounded-lg bg-background border border-surface-border overflow-hidden shrink-0">
+                      <div
+                        className="w-12 h-12 rounded-xl bg-background border border-surface-border overflow-hidden shrink-0 relative cursor-pointer group/img"
+                        onClick={() => c.imageUrl && setHoveredImage(c.imageUrl)}
+                      >
                         {c.imageUrl ? (
-                          <img
-                            src={c.imageUrl}
-                            alt="Evidence"
-                            className="w-full h-full object-cover"
-                          />
+                          <>
+                            <img
+                              src={c.imageUrl}
+                              alt="Evidence"
+                              className="w-full h-full object-cover transition-transform duration-200 group-hover/img:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white">
+                              <Eye className="w-3.5 h-3.5" />
+                            </div>
+                          </>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-[10px]">
+                          <div className="w-full h-full flex items-center justify-center text-gray-600 text-[10px] font-medium">
                             None
                           </div>
                         )}
@@ -173,11 +266,11 @@ export default function CasesPage() {
                     </td>
 
                     <td className="py-4 px-4">
-                      <div className="font-semibold text-white">
+                      <div className="font-semibold text-white group-hover:text-emerald-300 transition-colors">
                         {c.address || `${c.latitude}, ${c.longitude}`}
                       </div>
-                      <div className="text-gray-400 flex items-center gap-1 mt-0.5 text-[11px]">
-                        <MapPin className="w-3 h-3 text-primary shrink-0" />
+                      <div className="text-gray-400 flex items-center gap-1.5 mt-1 text-[11px]">
+                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                         <span>{c.ward || "Central Ward"}, {c.lga || "Ikeja"}</span>
                       </div>
                     </td>
@@ -204,19 +297,19 @@ export default function CasesPage() {
                         {c.status === "VERIFIED" && (
                           <button
                             onClick={() => setDispatchCase(c)}
-                            className="px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-bold hover:bg-primary/20 transition-colors flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-xl bg-primary/15 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/25 transition-all flex items-center gap-1.5 shadow-sm"
                           >
-                            <Send className="w-3 h-3" />
+                            <Send className="w-3.5 h-3.5" />
                             Dispatch
                           </button>
                         )}
 
                         <button
                           onClick={() => setSelectedCase(c)}
-                          className="px-2.5 py-1.5 rounded-lg bg-surface border border-surface-border text-gray-300 text-xs font-semibold hover:text-white hover:bg-surface-border transition-colors flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl bg-surface border border-surface-border text-gray-300 text-xs font-semibold hover:text-white hover:bg-surface-border transition-all flex items-center gap-1.5 shadow-sm"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          Details
+                          Review
                         </button>
                       </div>
                     </td>
@@ -226,6 +319,34 @@ export default function CasesPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Hover / Magnification Lightbox Overlay */}
+        {hoveredImage && (
+          <div
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-6"
+            onClick={() => setHoveredImage(null)}
+          >
+            <div
+              className="relative max-w-2xl max-h-[85vh] bg-surface rounded-2xl overflow-hidden border border-surface-border shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={hoveredImage}
+                alt="Enlarged Evidence"
+                className="w-full h-auto max-h-[75vh] object-contain"
+              />
+              <div className="p-4 bg-background/90 border-t border-surface-border flex items-center justify-between text-xs text-gray-300">
+                <span className="font-semibold text-white">Geotagged Photographic Proof</span>
+                <button
+                  onClick={() => setHoveredImage(null)}
+                  className="px-3 py-1 bg-surface-border rounded-lg text-white font-bold hover:bg-gray-700 transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Case Details Modal */}

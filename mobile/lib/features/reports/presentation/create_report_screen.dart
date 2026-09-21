@@ -299,67 +299,143 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 ),
               ] else ...[
                 Container(
-                  height: 180,
+                  height: 190,
                   decoration: BoxDecoration(
                     color: AppColors.darkCard,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: AppColors.darkBorder,
+                      color: AppColors.primary.withOpacity(0.3),
                       style: BorderStyle.solid,
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Stack(
                     children: [
-                      Container(
-                        width: 54,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.camera_alt_outlined,
-                            color: AppColors.primary, size: 28),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Take a photo of the waste problem',
-                        style: TextStyle(
-                          color: AppColors.textLight,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                      // Viewfinder corner marks
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: AppColors.primary, width: 2),
+                              left: BorderSide(color: AppColors.primary, width: 2),
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              side: const BorderSide(color: AppColors.primary),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: AppColors.primary, width: 2),
+                              right: BorderSide(color: AppColors.primary, width: 2),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        left: 10,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: AppColors.primary, width: 2),
+                              left: BorderSide(color: AppColors.primary, width: 2),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: AppColors.primary, width: 2),
+                              right: BorderSide(color: AppColors.primary, width: 2),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Center picker options
+                      Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.camera_alt_outlined,
+                                  color: AppColors.primary, size: 26),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Capture Geotagged Waste Evidence',
+                              style: TextStyle(
+                                color: AppColors.textLight,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            onPressed: () => _pickImage(ImageSource.camera),
-                            icon: const Icon(Icons.camera, size: 18),
-                            label: const Text('Camera'),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.textLight,
-                              side: const BorderSide(color: AppColors.darkBorder),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () =>
+                                      _pickImage(ImageSource.camera),
+                                  icon: const Icon(Icons.camera, size: 16),
+                                  label: const Text('Camera',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                                ),
+                                const SizedBox(width: 10),
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.textLight,
+                                    side: const BorderSide(
+                                        color: AppColors.darkBorder),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () =>
+                                      _pickImage(ImageSource.gallery),
+                                  icon: const Icon(Icons.photo_library_outlined,
+                                      size: 16),
+                                  label: const Text('Gallery',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                                ),
+                              ],
                             ),
-                            onPressed: () => _pickImage(ImageSource.gallery),
-                            icon: const Icon(Icons.photo_library_outlined, size: 18),
-                            label: const Text('Gallery'),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -393,11 +469,11 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     TextButton.icon(
                       onPressed: _detectLocation,
                       icon: const Icon(Icons.my_location,
-                          size: 16, color: AppColors.primary),
+                          size: 15, color: AppColors.primary),
                       label: Text(
-                        _currentPosition != null ? 'Refresh GPS' : 'Get GPS',
+                        _currentPosition != null ? 'Refresh GPS' : 'Acquire GPS',
                         style: const TextStyle(
-                            color: AppColors.primary, fontSize: 13),
+                            color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w700),
                       ),
                     ),
                 ],
@@ -408,23 +484,33 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.darkSurface,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: _currentPosition != null
-                        ? AppColors.primary.withOpacity(0.4)
+                        ? AppColors.primary.withOpacity(0.5)
                         : AppColors.darkBorder,
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      _currentPosition != null
-                          ? Icons.location_on
-                          : Icons.location_off_outlined,
-                      color: _currentPosition != null
-                          ? AppColors.primary
-                          : AppColors.textMuted,
-                      size: 24,
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: _currentPosition != null
+                            ? AppColors.primary.withOpacity(0.15)
+                            : AppColors.darkBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        _currentPosition != null
+                            ? Icons.location_on
+                            : Icons.location_off_outlined,
+                        color: _currentPosition != null
+                            ? AppColors.primary
+                            : AppColors.textMuted,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -436,17 +522,31 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                               '${_currentPosition!.latitude.toStringAsFixed(5)}, ${_currentPosition!.longitude.toStringAsFixed(5)}',
                               style: const TextStyle(
                                 color: AppColors.textLight,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                                 fontSize: 13,
                               ),
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              'Accurate to ±${_currentPosition!.accuracy.toStringAsFixed(1)}m',
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 11,
-                              ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.statusResolved,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'High Accuracy (±${_currentPosition!.accuracy.toStringAsFixed(1)}m)',
+                                  style: const TextStyle(
+                                    color: AppColors.statusResolved,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ] else if (_locationError != null) ...[
                             Text(

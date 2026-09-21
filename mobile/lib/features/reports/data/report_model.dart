@@ -10,6 +10,7 @@ class WasteCaseModel {
   final String privacyLevel;
   final DateTime reportedAt;
   final DateTime createdAt;
+  final String? imageUrl;
 
   WasteCaseModel({
     required this.id,
@@ -23,6 +24,7 @@ class WasteCaseModel {
     required this.privacyLevel,
     required this.reportedAt,
     required this.createdAt,
+    this.imageUrl,
   });
 
   factory WasteCaseModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class WasteCaseModel {
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
+      imageUrl: json['imageUrl'] as String? ?? json['mediaUrl'] as String?,
     );
   }
 

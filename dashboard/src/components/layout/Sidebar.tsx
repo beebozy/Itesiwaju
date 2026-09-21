@@ -43,19 +43,38 @@ export function Sidebar() {
     router.push("/login");
   };
 
+  const getCleanDisplayName = (name?: string) => {
+    if (!name) return "Lawma Admin";
+    if (name.trim().toLowerCase() === "lawma test operator") return "Lawma Admin";
+    const cleaned = name.replace(/^agency\s+/i, "").trim();
+    if (!cleaned || cleaned.toLowerCase() === "operator") return "Lawma Admin";
+    return cleaned;
+  };
+
+  const getCleanRole = (role?: string) => {
+    if (!role) return "ADMIN";
+    if (role === "AGENCY_OPERATOR") return "LAWMA ADMIN";
+    return role.replace(/^AGENCY_/, "");
+  };
+
+  const displayName = getCleanDisplayName(user?.fullName);
+  const displayRole = getCleanRole(user?.role);
+
   return (
     <aside className="w-64 bg-surface border-r border-surface-border flex flex-col justify-between shrink-0 h-screen sticky top-0">
       <div>
         {/* Brand header */}
         <div className="p-6 border-b border-surface-border flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center font-bold text-white text-lg">
-            I
-          </div>
+          <img
+            src="/logo.png"
+            alt="Itesiwaju Logo"
+            className="w-9 h-9 rounded-xl object-contain shadow-md shadow-emerald-500/10 border border-emerald-500/20"
+          />
           <div>
             <div className="font-extrabold text-white tracking-wider flex items-center gap-1.5 text-base">
               ITESIWAJU
               <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-bold uppercase">
-                Agency
+                Admin
               </span>
             </div>
             <div className="text-xs text-gray-400 font-medium">
@@ -109,14 +128,14 @@ export function Sidebar() {
           <div className="flex items-center justify-between p-2 bg-background/60 rounded-lg">
             <div className="flex items-center gap-2.5 overflow-hidden">
               <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary shrink-0">
-                {user?.fullName ? user.fullName[0].toUpperCase() : "OP"}
+                {displayName ? displayName[0].toUpperCase() : "A"}
               </div>
               <div className="overflow-hidden">
                 <div className="text-xs font-bold text-white truncate">
-                  {user?.fullName || "Agency Operator"}
+                  {displayName}
                 </div>
                 <div className="text-[10px] text-primary font-semibold tracking-wide uppercase truncate">
-                  {user?.role || "AGENCY_OPERATOR"}
+                  {displayRole}
                 </div>
               </div>
             </div>

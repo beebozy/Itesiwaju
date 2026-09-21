@@ -95,21 +95,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Logo & Intro
                   Row(
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'I',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                          ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.cover,
                         ),
                       ),
                       const SizedBox(width: 12),

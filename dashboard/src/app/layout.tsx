@@ -5,6 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "LAWMA Operations Portal - Itesiwaju",
   description: "Institutional public-service accountability and waste management platform for Lagos State.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

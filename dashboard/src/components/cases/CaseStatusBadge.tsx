@@ -85,14 +85,22 @@ export function CaseStatusBadge({ status, size = "sm" }: CaseStatusBadgeProps) {
     dot: "bg-gray-400",
   };
 
+  const isLive = status === "REPORTED" || status === "UNDER_REVIEW" || status === "IN_PROGRESS";
   const sizeClasses =
-    size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm font-semibold";
+    size === "sm" ? "px-2.5 py-0.5 text-[11px]" : "px-3 py-1 text-xs font-semibold";
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border ${config.bg} ${config.text} ${sizeClasses} font-medium`}
+      className={`inline-flex items-center gap-1.5 rounded-full border ${config.bg} ${config.text} ${sizeClasses} font-medium tracking-wide shadow-sm`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+      <span className="relative flex h-1.5 w-1.5">
+        {isLive && (
+          <span
+            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${config.dot} opacity-75`}
+          />
+        )}
+        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${config.dot}`} />
+      </span>
       {config.label}
     </span>
   );

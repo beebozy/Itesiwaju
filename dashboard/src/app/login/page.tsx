@@ -22,7 +22,7 @@ export default function LoginPage() {
     try {
       if (showTokenInput && directToken.trim()) {
         setStoredSession(directToken.trim(), {
-          fullName: "LAWMA Field Dispatcher",
+          fullName: "Lawma Admin",
           role: "AGENCY_OPERATOR",
         });
         router.push("/cases");
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
       if (role !== "AGENCY_OPERATOR" && role !== "ADMIN") {
         setError(
-          `Access Restricted: Your account has role "${role}". Only AGENCY_OPERATOR and ADMIN accounts have authorization to dispatch and modify cases.`
+          `Access Restricted: Your account has role "${role}". Only Administrator and Authorized Operator accounts have authorization to dispatch and modify cases.`
         );
         setIsLoading(false);
         return;
@@ -59,9 +59,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-surface border border-surface-border rounded-2xl p-8 shadow-2xl">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center font-extrabold text-white text-2xl shadow-lg shadow-primary/20">
-            I
-          </div>
+          <img
+            src="/logo.png"
+            alt="Itesiwaju Logo"
+            className="w-12 h-12 rounded-2xl object-contain shadow-lg shadow-emerald-500/20 border border-emerald-500/30"
+          />
           <div>
             <div className="text-xl font-extrabold text-white tracking-wider flex items-center gap-2">
               ITESIWAJU
@@ -74,9 +76,9 @@ export default function LoginPage() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-white mb-1">Agency Authentication</h1>
+          <h1 className="text-xl font-bold text-white mb-1">Lawma Admin Login</h1>
           <p className="text-xs text-gray-400 leading-relaxed">
-            Enter your official LAWMA operator credentials to access dispatch routing and case state authorization.
+            Enter your official LAWMA credentials to access dispatch routing and case state authorization.
           </p>
         </div>
 
@@ -92,7 +94,7 @@ export default function LoginPage() {
             <>
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-                  Official Agency Email
+                  Official Email
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" />
@@ -100,7 +102,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="operator@lawma.gov.ng"
+                    placeholder="admin@lawma.gov.ng"
                     required
                     className="w-full pl-10 pr-4 py-2.5 bg-background border border-surface-border rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary transition"
                   />
@@ -109,7 +111,7 @@ export default function LoginPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1.5">
-                  Operator Password
+                  Password
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" />

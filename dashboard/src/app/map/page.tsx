@@ -120,8 +120,55 @@ export default function MapPage() {
                   { top: "60%", left: "55%" },
                   { top: "72%", left: "70%" },
                   { top: "25%", left: "48%" },
+                  { top: "42%", left: "62%" },
+                  { top: "58%", left: "28%" },
                 ];
                 const pos = offsets[idx % offsets.length];
+
+                const getPinColor = (status: string) => {
+                  switch (status) {
+                    case "REPORTED":
+                    case "UNDER_REVIEW":
+                      return {
+                        ring: "bg-blue-500",
+                        border: "border-blue-400",
+                        text: "text-blue-400",
+                        shadow: "shadow-blue-500/30",
+                      };
+                    case "VERIFIED":
+                      return {
+                        ring: "bg-emerald-500",
+                        border: "border-emerald-400",
+                        text: "text-emerald-400",
+                        shadow: "shadow-emerald-500/30",
+                      };
+                    case "ASSIGNED":
+                    case "IN_PROGRESS":
+                      return {
+                        ring: "bg-purple-500",
+                        border: "border-purple-400",
+                        text: "text-purple-400",
+                        shadow: "shadow-purple-500/30",
+                      };
+                    case "RESOLVED":
+                    case "CLOSED":
+                      return {
+                        ring: "bg-teal-500",
+                        border: "border-teal-400",
+                        text: "text-teal-400",
+                        shadow: "shadow-teal-500/30",
+                      };
+                    default:
+                      return {
+                        ring: "bg-primary",
+                        border: "border-primary",
+                        text: "text-primary",
+                        shadow: "shadow-primary/30",
+                      };
+                  }
+                };
+
+                const pinTheme = getPinColor(c.status);
 
                 return (
                   <div
@@ -131,22 +178,26 @@ export default function MapPage() {
                     className="absolute cursor-pointer -translate-x-1/2 -translate-y-1/2 group z-20"
                   >
                     <div className="relative flex items-center justify-center">
-                      <span className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-primary opacity-30" />
-                      <div className="w-9 h-9 rounded-full bg-surface border-2 border-primary flex items-center justify-center text-primary shadow-lg shadow-primary/30 group-hover:scale-125 transition-transform">
+                      <span
+                        className={`animate-ping absolute inline-flex h-8 w-8 rounded-full ${pinTheme.ring} opacity-30`}
+                      />
+                      <div
+                        className={`w-9 h-9 rounded-full bg-surface border-2 ${pinTheme.border} flex items-center justify-center ${pinTheme.text} shadow-lg ${pinTheme.shadow} group-hover:scale-125 transition-transform duration-200`}
+                      >
                         <MapPin className="w-4 h-4" />
                       </div>
                     </div>
 
                     {/* Tooltip on hover */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex flex-col bg-surface border border-surface-border p-2.5 rounded-lg shadow-xl min-w-[180px] text-xs pointer-events-none z-30">
-                      <span className="font-mono font-bold text-white text-[11px]">
-                        {c.caseNumber}
-                      </span>
-                      <span className="text-gray-300 font-medium truncate mt-0.5">
-                        {c.ward || "Lagos Ward"}
-                      </span>
-                      <span className="text-[10px] text-primary">
-                        {c.status}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex flex-col bg-surface/95 backdrop-blur-md border border-surface-border p-3 rounded-xl shadow-2xl min-w-[200px] text-xs pointer-events-none z-30 animate-in fade-in zoom-in-95">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="font-mono font-bold text-white text-[11px]">
+                          {c.caseNumber}
+                        </span>
+                        <CaseStatusBadge status={c.status} size="sm" />
+                      </div>
+                      <span className="text-gray-300 font-medium truncate">
+                        {c.address || `${c.ward || "Lagos Ward"}, ${c.lga || "Ikeja"}`}
                       </span>
                     </div>
                   </div>
@@ -176,20 +227,36 @@ export default function MapPage() {
                   <div
                     key={c.id}
                     onClick={() => setSelectedCase(c)}
-                    className="p-3 bg-background/60 hover:bg-background rounded-xl border border-surface-border hover:border-primary/50 cursor-pointer transition-all space-y-1.5"
+                    className="p-3 bg-background/60 hover:bg-background rounded-xl border border-surface-border hover:border-primary/50 cursor-pointer transition-all space-y-2 group"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-xs text-white">
-                        {c.caseNumber}
-                      </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {c.imageUrl ? (
+                          <div className="w-9 h-9 rounded-lg bg-surface border border-surface-border overflow-hidden shrink-0">
+                            <img
+                              src={c.imageUrl}
+                              alt="Evidence"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg bg-surface border border-surface-border flex items-center justify-center text-gray-600 text-[10px] shrink-0">
+                            <MapPin className="w-4 h-4" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <span className="font-mono font-bold text-xs text-white group-hover:text-primary transition-colors block truncate">
+                            {c.caseNumber}
+                          </span>
+                          <div className="text-[11px] font-medium text-gray-300 truncate">
+                            {c.address || `${c.latitude}, ${c.longitude}`}
+                          </div>
+                        </div>
+                      </div>
                       <CaseStatusBadge status={c.status} size="sm" />
                     </div>
 
-                    <div className="text-xs font-medium text-gray-200 truncate">
-                      {c.address || `${c.latitude}, ${c.longitude}`}
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1">
+                    <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1 border-t border-surface-border/40">
                       <span>LGA: {c.lga || "Ikeja"}</span>
                       {c.latitude && c.longitude && (
                         <a
@@ -197,7 +264,7 @@ export default function MapPage() {
                           target="_blank"
                           rel="noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="text-primary hover:underline flex items-center gap-1"
+                          className="text-primary hover:underline flex items-center gap-1 font-medium"
                         >
                           Google Maps <ExternalLink className="w-2.5 h-2.5" />
                         </a>

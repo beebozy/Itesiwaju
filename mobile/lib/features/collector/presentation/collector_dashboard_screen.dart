@@ -45,16 +45,13 @@ class _CollectorDashboardScreenState
         elevation: 0,
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.local_shipping_outlined,
-                color: AppColors.primary,
-                size: 20,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(width: 10),
@@ -275,44 +272,76 @@ class _CollectorDashboardScreenState
             ),
             const SizedBox(height: 12),
 
-            // Location
+            // Location & Evidence Thumbnail
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.location_on_outlined,
-                  size: 16,
-                  color: AppColors.textMuted,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    (task.latitude != null && task.longitude != null)
-                        ? 'Lat: ${task.latitude}, Lon: ${task.longitude}'
-                        : 'Lagos Municipal Ward',
-                    style: const TextStyle(
-                      color: AppColors.textLight,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                if (task.imageUrl != null && task.imageUrl!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        task.imageUrl!,
+                        width: 58,
+                        height: 58,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: 58,
+                          height: 58,
+                          color: AppColors.darkSurface,
+                          child: const Icon(Icons.image_not_supported_outlined,
+                              size: 20, color: AppColors.textMuted),
+                        ),
+                      ),
                     ),
+                  ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 15,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              (task.latitude != null && task.longitude != null)
+                                  ? '${task.latitude}, ${task.longitude}'
+                                  : 'Lagos Pilot Municipal Ward',
+                              style: const TextStyle(
+                                color: AppColors.textLight,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (task.description != null &&
+                          task.description!.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          '"${task.description}"',
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
             ),
-
-            if (task.description != null && task.description!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                '"${task.description}"',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
 
             const SizedBox(height: 14),
             const Divider(color: AppColors.darkBorder, height: 1),
